@@ -1,4 +1,5 @@
 repeat wait() until game:IsLoaded()
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
@@ -72,7 +73,7 @@ local function randomizeEggs(forceRare, blockRare)
     end
 end
 
--- 🌈 RGB Animated Loading Screen
+-- 🌈 RGB Animated Loading Screen (30s)
 local loadingGui = Instance.new("ScreenGui", PlayerGui)
 loadingGui.Name = "XenoLoading"
 loadingGui.IgnoreGuiInset = true
@@ -106,23 +107,23 @@ bar.Position = UDim2.new(0, 10, 1, -15)
 bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 4)
 
--- Animate bar and RGB
+-- Animate bar and RGB for 30 seconds
 spawn(function()
     local r, g, b = 255, 0, 0
-    for i = 1, 30 do
-        local t = i / 30
+    for i = 1, 90 do
+        local t = i / 90
         bar.Size = UDim2.new(t * 0.92, 0, 0, 8)
         status.Text = "Loading" .. string.rep(".", i % 4)
         box.BackgroundColor3 = Color3.fromRGB(r, g, b)
         r, g, b = (r + 30) % 256, (g + 60) % 256, (b + 90) % 256
-        wait(10 / 30)
+        wait(30 / 90)
     end
     loadingGui:Destroy()
 end)
 
-wait(10.2)
+wait(30.2)
 
--- 🌟 GUI
+-- 🌟 Main GUI
 local gui = Instance.new("ScreenGui", PlayerGui)
 gui.Name = "KuniHubGUI"
 
