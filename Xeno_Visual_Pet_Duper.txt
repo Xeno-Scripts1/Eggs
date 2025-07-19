@@ -28,47 +28,86 @@ ScreenGui.ResetOnSpawn = false
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 380, 0, 200)
+MainFrame.Size = UDim2.new(0, 380, 0, 230)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(60, 40, 30) -- base dark brown-orange
+MainFrame.BackgroundColor3 = Color3.fromRGB(70, 30, 30) -- dark muted reddish-brown
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
--- Gradient Background for MainFrame
-createGradient(MainFrame, Color3.fromRGB(120, 70, 40), Color3.fromRGB(40, 25, 15))
-
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.CornerRadius = UDim.new(0, 18)
 UICorner.Parent = MainFrame
 
--- Title Label
+-- Glow effect frame behind main frame for glowing button edges (for the button)
+local GlowFrame = Instance.new("Frame")
+GlowFrame.Size = UDim2.new(0.88, 0, 0, 70)
+GlowFrame.Position = UDim2.new(0.06, 0, 0.65, 0)
+GlowFrame.BackgroundColor3 = Color3.fromRGB(140, 43, 226) -- purple glow
+GlowFrame.BorderSizePixel = 0
+GlowFrame.ZIndex = 9
+GlowFrame.ClipsDescendants = false
+GlowFrame.AnchorPoint = Vector2.new(0, 0)
+GlowFrame.Parent = MainFrame
+
+local GlowUICorner = Instance.new("UICorner")
+GlowUICorner.CornerRadius = UDim.new(0, 20)
+GlowUICorner.Parent = GlowFrame
+
+-- Blur (simulated glow) with UIGradient on GlowFrame
+local GlowGradient = Instance.new("UIGradient")
+GlowGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 90, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 50, 220))
+}
+GlowGradient.Rotation = 45
+GlowGradient.Parent = GlowFrame
+
+-- Title with warning icon (⚠️)
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -40, 0, 45)
+Title.Size = UDim2.new(1, -40, 0, 50)
 Title.Position = UDim2.new(0, 20, 0, 15)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "🌱 Grow A Garden Dupe"
-Title.TextColor3 = Color3.fromRGB(240, 230, 220)
+Title.Text = "⚠️ Grow A Garden Dupe (Not Visual)"
+Title.TextColor3 = Color3.fromRGB(255, 200, 180)
 Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Warning Label
+-- Warning Label (smaller, lighter font)
 local WarningLabel = Instance.new("TextLabel")
-WarningLabel.Size = UDim2.new(1, -40, 0, 50)
-WarningLabel.Position = UDim2.new(0, 20, 0, 65)
+WarningLabel.Size = UDim2.new(1, -40, 0, 45)
+WarningLabel.Position = UDim2.new(0, 20, 0, 70)
 WarningLabel.BackgroundTransparency = 1
-WarningLabel.Font = Enum.Font.GothamBold
-WarningLabel.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
-WarningLabel.TextColor3 = Color3.fromRGB(255, 120, 90)
+WarningLabel.Font = Enum.Font.GothamSemibold
+WarningLabel.Text = "WARNING: This is NOT a visual dupe! Use at your own risk!"
+WarningLabel.TextColor3 = Color3.fromRGB(230, 160, 140)
 WarningLabel.TextScaled = true
 WarningLabel.TextWrapped = true
 WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
 WarningLabel.Parent = MainFrame
 
--- Loading Bar Background
+-- Start Button (above GlowFrame for layering)
+local StartButton = Instance.new("TextButton")
+StartButton.Size = UDim2.new(0.85, 0, 0, 60)
+StartButton.Position = UDim2.new(0.5, 0, 0.65, 0)
+StartButton.AnchorPoint = Vector2.new(0.5, 0)
+StartButton.BackgroundColor3 = Color3.fromRGB(65, 50, 220)
+StartButton.BorderSizePixel = 0
+StartButton.Text = "START DUPING"
+StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+StartButton.Font = Enum.Font.GothamBold
+StartButton.TextScaled = true
+StartButton.ZIndex = 10
+StartButton.Parent = MainFrame
+
+local StartButtonCorner = Instance.new("UICorner")
+StartButtonCorner.CornerRadius = UDim.new(0, 20)
+StartButtonCorner.Parent = StartButton
+
+-- Loading Bar Background (hidden initially)
 local LoadingBarBackground = Instance.new("Frame")
 LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 28)
 LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.55, 0)
@@ -77,6 +116,7 @@ LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(45, 30, 30)
 LoadingBarBackground.BorderSizePixel = 0
 LoadingBarBackground.ClipsDescendants = true
 LoadingBarBackground.Visible = false
+LoadingBarBackground.ZIndex = 11
 LoadingBarBackground.Parent = MainFrame
 
 local LoadingBarCorner = Instance.new("UICorner")
@@ -87,9 +127,8 @@ local LoadingBarFill = Instance.new("Frame")
 LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
 LoadingBarFill.BackgroundColor3 = Color3.fromRGB(140, 50, 220)
 LoadingBarFill.BorderSizePixel = 0
+LoadingBarFill.ZIndex = 12
 LoadingBarFill.Parent = LoadingBarBackground
-
-createGradient(LoadingBarFill, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
 
 local LoadingFillCorner = Instance.new("UICorner")
 LoadingFillCorner.CornerRadius = UDim.new(0, 14)
@@ -102,39 +141,41 @@ LoadingPercent.Font = Enum.Font.GothamBold
 LoadingPercent.TextColor3 = Color3.fromRGB(255, 255, 255)
 LoadingPercent.TextScaled = true
 LoadingPercent.Text = "0%"
+LoadingPercent.ZIndex = 13
 LoadingPercent.Parent = LoadingBarBackground
 
--- Start Button
-local StartButton = Instance.new("TextButton")
-StartButton.Size = UDim2.new(0.85, 0, 0, 60)
-StartButton.Position = UDim2.new(0.5, 0, 0.85, 0)
-StartButton.AnchorPoint = Vector2.new(0.5, 0)
-StartButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-StartButton.BorderSizePixel = 0
-StartButton.Text = "START DUPING"
-StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-StartButton.Font = Enum.Font.GothamBold
-StartButton.TextScaled = true
-StartButton.Parent = MainFrame
+-- Status Text below button
+local StatusText = Instance.new("TextLabel")
+StatusText.Size = UDim2.new(1, -40, 0, 30)
+StatusText.Position = UDim2.new(0, 20, 0, 140)
+StatusText.BackgroundTransparency = 1
+StatusText.Font = Enum.Font.GothamSemibold
+StatusText.Text = "DUPING SYSTEM - READY"
+StatusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+StatusText.TextScaled = true
+StatusText.TextXAlignment = Enum.TextXAlignment.Center
+StatusText.Parent = MainFrame
 
-local StartButtonCorner = Instance.new("UICorner")
-StartButtonCorner.CornerRadius = UDim.new(0, 20)
-StartButtonCorner.Parent = StartButton
+-- Edition Text below StatusText
+local EditionText = Instance.new("TextLabel")
+EditionText.Size = UDim2.new(1, -40, 0, 30)
+EditionText.Position = UDim2.new(0, 20, 0, 175)
+EditionText.BackgroundTransparency = 1
+EditionText.Font = Enum.Font.GothamSemibold
+EditionText.Text = "PREMIUM EDITION"
+EditionText.TextColor3 = Color3.fromRGB(180, 180, 180)
+EditionText.TextScaled = true
+EditionText.TextXAlignment = Enum.TextXAlignment.Center
+EditionText.Parent = MainFrame
 
-local btnGradient = createGradient(StartButton, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
-
+-- Button hover glow effect
 StartButton.MouseEnter:Connect(function()
-    btnGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 80, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 140, 255))
-    }
+    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(180, 90, 255)}):Play()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(100, 70, 255)}):Play()
 end)
-
 StartButton.MouseLeave:Connect(function()
-    btnGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 105, 225))
-    }
+    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(140, 43, 226)}):Play()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(65, 50, 220)}):Play()
 end)
 
 -- Dragging logic
@@ -222,6 +263,7 @@ local function animateLoadingBar(duration)
     StartButton.AutoButtonColor = false
     StartButton.Active = false
     StartButton.Text = "⏳ Duplicating..."
+    StatusText.Text = "DUPING SYSTEM - RUNNING"
 
     local startTime = tick()
     local connection
@@ -242,9 +284,10 @@ local function animateLoadingBar(duration)
     StartButton.AutoButtonColor = true
     StartButton.Active = true
     StartButton.Text = "START DUPING"
+    StatusText.Text = "DUPING SYSTEM - READY"
 end
 
--- Start Button click
+-- Button click
 StartButton.MouseButton1Click:Connect(function()
     if not StartButton.Active then return end
     coroutine.wrap(function()
