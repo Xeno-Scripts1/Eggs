@@ -1,4 +1,4 @@
---// Grow A Garden Ddupe UI with Loading Bar and Draggable Frame
+--// Grow A Garden Dupe UI with Loading Bar and Draggable Frame (Styled as requested)
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -14,6 +14,13 @@ if PlayerGui:FindFirstChild("XenoPetDuper") then
     PlayerGui.XenoPetDuper:Destroy()
 end
 
+-- Gradient helper function
+local function createGradient(frame, color1, color2)
+    local gradient = Instance.new("UIGradient", frame)
+    gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)}
+    return gradient
+end
+
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenoPetDuper"
@@ -22,84 +29,76 @@ ScreenGui.ResetOnSpawn = false
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 360, 0, 190)
+MainFrame.Size = UDim2.new(0, 380, 0, 200)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-MainFrame.BackgroundTransparency = 0.6
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 26, 18) -- muted brownish-orange base
 MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
 MainFrame.ClipsDescendants = true
-MainFrame.ZIndex = 5
+MainFrame.ZIndex = 10
+MainFrame.Parent = ScreenGui
+
+-- Background gradient blending brownish-orange and dark grayish-brown
+createGradient(MainFrame, Color3.fromRGB(60, 40, 30), Color3.fromRGB(30, 25, 20))
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.CornerRadius = UDim.new(0, 18)
 
--- Shadow (behind MainFrame)
-local Shadow = Instance.new("ImageLabel")
-Shadow.Size = UDim2.new(1, 20, 1, 20)
-Shadow.Position = UDim2.new(0, -10, 0, -10)
-Shadow.BackgroundTransparency = 1
-Shadow.ZIndex = 4
-Shadow.Parent = MainFrame
-Shadow.Image = "rbxassetid://3526306030" -- subtle shadow image
-Shadow.ImageColor3 = Color3.new(0, 0, 0)
-Shadow.ImageTransparency = 0.7
-
--- Title
+-- Title Label
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -30, 0, 44)
-Title.Position = UDim2.new(0, 15, 0, 12)
+Title.Size = UDim2.new(1, -50, 0, 45)
+Title.Position = UDim2.new(0, 25, 0, 15)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "🌱 Grow A Garden Ddupe (Not Visual)"
-Title.TextColor3 = Color3.fromRGB(255, 100, 100)
+Title.Text = "Grow A Garden Dupe"
+Title.TextColor3 = Color3.fromRGB(245, 235, 230) -- off-white
 Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Warning message (centered near top)
+-- Warning Label with ⚠️ icon
 local WarningLabel = Instance.new("TextLabel")
-WarningLabel.Size = UDim2.new(1, -40, 0, 36)
-WarningLabel.Position = UDim2.new(0, 20, 0, 64)
+WarningLabel.Size = UDim2.new(1, -50, 0, 45)
+WarningLabel.Position = UDim2.new(0, 25, 0, 70)
 WarningLabel.BackgroundTransparency = 1
-WarningLabel.Font = Enum.Font.GothamSemibold
+WarningLabel.Font = Enum.Font.GothamBold
 WarningLabel.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
-WarningLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+WarningLabel.TextColor3 = Color3.fromRGB(230, 100, 80) -- warm orange-red
 WarningLabel.TextScaled = true
 WarningLabel.TextWrapped = true
-WarningLabel.TextXAlignment = Enum.TextXAlignment.Center
+WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
 WarningLabel.Parent = MainFrame
 
 -- Loading Bar Background
 local LoadingBarBackground = Instance.new("Frame")
-LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 28)
+LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 30)
 LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.55, 0)
 LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0)
-LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(55, 45, 50)
 LoadingBarBackground.BorderSizePixel = 0
 LoadingBarBackground.ClipsDescendants = true
 LoadingBarBackground.Visible = false
 LoadingBarBackground.Parent = MainFrame
 
 local LoadingUICorner = Instance.new("UICorner", LoadingBarBackground)
-LoadingUICorner.CornerRadius = UDim.new(0, 14)
+LoadingUICorner.CornerRadius = UDim.new(0, 15)
 
 local LoadingBarFill = Instance.new("Frame")
 LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LoadingBarFill.BorderSizePixel = 0
 LoadingBarFill.Parent = LoadingBarBackground
 
-local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
-LoadingFillCorner.CornerRadius = UDim.new(0, 14)
+createGradient(LoadingBarFill, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225)) -- purple to blue gradient
 
--- Loading Percentage Label
+local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
+LoadingFillCorner.CornerRadius = UDim.new(0, 15)
+
 local LoadingPercent = Instance.new("TextLabel")
 LoadingPercent.Size = UDim2.new(1, 0, 1, 0)
 LoadingPercent.BackgroundTransparency = 1
-LoadingPercent.Font = Enum.Font.GothamSemibold
-LoadingPercent.TextColor3 = Color3.new(1,1,1)
+LoadingPercent.Font = Enum.Font.GothamBold
+LoadingPercent.TextColor3 = Color3.new(1, 1, 1)
 LoadingPercent.TextScaled = true
 LoadingPercent.Text = "0%"
 LoadingPercent.Parent = LoadingBarBackground
@@ -109,23 +108,31 @@ local StartButton = Instance.new("TextButton")
 StartButton.Size = UDim2.new(0.85, 0, 0, 60)
 StartButton.Position = UDim2.new(0.5, 0, 0.85, 0)
 StartButton.AnchorPoint = Vector2.new(0.5, 0)
-StartButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
-StartButton.TextColor3 = Color3.new(1, 1, 1)
+StartButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- base white for gradient
+StartButton.BorderSizePixel = 0
+StartButton.Text = "START DUPING"
+StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
-StartButton.Text = "🚀 Start Duping"
 StartButton.TextScaled = true
-StartButton.AutoButtonColor = true
 StartButton.Parent = MainFrame
 
 local StartButtonCorner = Instance.new("UICorner", StartButton)
-StartButtonCorner.CornerRadius = UDim.new(0, 16)
+StartButtonCorner.CornerRadius = UDim.new(0, 20)
 
--- Button hover animation
+local btnGradient = createGradient(StartButton, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225)) -- purple to blue gradient
+
+-- Button hover effect: brighten gradient on hover
 StartButton.MouseEnter:Connect(function()
-    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(230, 70, 70)}):Play()
+    btnGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 80, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 140, 255))
+    }
 end)
 StartButton.MouseLeave:Connect(function()
-    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+    btnGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 105, 225))
+    }
 end)
 
 -- Drag handling for MainFrame
@@ -172,7 +179,7 @@ local function dupePet()
     if not equippedTool then
         StartButton.Text = "⚠️ No pet equipped!"
         wait(1.5)
-        StartButton.Text = "🚀 Start Duping"
+        StartButton.Text = "START DUPING"
         return
     end
 
@@ -205,7 +212,7 @@ local function dupePet()
 
     StartButton.Text = "✅ Pet Duplicated!"
     wait(1.5)
-    StartButton.Text = "🚀 Start Duping"
+    StartButton.Text = "START DUPING"
 end
 
 -- Animate loading bar with percentage
@@ -235,7 +242,7 @@ local function animateLoadingBar(duration)
     LoadingBarBackground.Visible = false
     StartButton.AutoButtonColor = true
     StartButton.Active = true
-    StartButton.Text = "🚀 Start Duping"
+    StartButton.Text = "START DUPING"
 end
 
 -- Start button click handler
