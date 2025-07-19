@@ -1,167 +1,90 @@
+--// Xeno Visual Pet Duper UI with Held Pet Clone
 
--- Xeno Visual Pet Duper (Deluxe Edition)
+-- SERVICES
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local Debris = game:GetService("Debris")
-local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-
--- GUI Setup
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "XenoPetDuper"
-screenGui.ResetOnSpawn = false
-screenGui.Enabled = true
-
--- Toggle Visibility Keybind
-local isVisible = true
-UserInputService.InputBegan:Connect(function(input, gp)
-	if gp then return end
-	if input.KeyCode == Enum.KeyCode.X then
-		isVisible = not isVisible
-		local target = isVisible and 1 or 0
-		TweenService:Create(screenGui, TweenInfo.new(0.3), {Enabled = isVisible}):Play()
-		frame.Visible = isVisible
-	end
-end)
-
--- Main Frame
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 300, 0, 180)
-frame.Position = UDim2.new(0.5, -150, 0.5, -90)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Visible = false
-
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
-
--- Title
-local title = Instance.new("TextLabel", frame)
-title.Text = "🌟 Xeno Pet Duper"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.fromRGB(255, 85, 85)
-
--- Dupe Button
-local dupeBtn = Instance.new("TextButton", frame)
-dupeBtn.Text = "✨ Dupe Held Pet"
-dupeBtn.Font = Enum.Font.Gotham
-dupeBtn.TextSize = 16
-dupeBtn.Size = UDim2.new(0.8, 0, 0, 50)
-dupeBtn.Position = UDim2.new(0.1, 0, 0.5, 0)
-dupeBtn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-dupeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-dupeBtn.BorderSizePixel = 0
-
-local btnCorner = Instance.new("UICorner", dupeBtn)
-btnCorner.CornerRadius = UDim.new(0, 8)
-
--- Hover effect
-dupeBtn.MouseEnter:Connect(function()
-	TweenService:Create(dupeBtn, TweenInfo.new(0.15), {
-		BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-	}):Play()
-end)
-dupeBtn.MouseLeave:Connect(function()
-	TweenService:Create(dupeBtn, TweenInfo.new(0.15), {
-		BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-	}):Play()
-end)
-
--- Fade-in GUI on load
-TweenService:Create(frame, TweenInfo.new(0.5), {
-	BackgroundTransparency = 0
-}):Play()
-task.wait(0.2)
-frame.Visible = true
-
--- Rotation Animation
-local function rotateClone(model)
-	local angle = 0
-	local heartbeatConn
-	heartbeatConn = RunService.Heartbeat:Connect(function(dt)
-		if not model or not model:FindFirstChildWhichIsA("BasePart") then
-			heartbeatConn:Disconnect()
-			return
-		end
-		angle += dt * math.pi
-		local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-		if primary then
-			primary.CFrame *= CFrame.Angles(0, dt, 0)
-		end
-	end)
+-- CLEANUP
+if PlayerGui:FindFirstChild("XenoPetDuper") then
+    PlayerGui.XenoPetDuper:Destroy()
 end
 
--- Dupe Logic
-dupeBtn.MouseButton1Click:Connect(function()
-	local tool = nil
-	for _, item in pairs(character:GetChildren()) do
-		if item:IsA("Tool") then
-			tool = item
-			break
-		end
-	end
+-- UI CREATION
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "XenoPetDuper"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
 
-	if not tool then
-		warn("No tool equipped.")
-		return
-	end
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-	-- Look for a Model or Part inside the tool
-	local petModel = nil
-	for _, child in pairs(tool:GetChildren()) do
-		if child:IsA("Model") or child:IsA("Part") then
-			petModel = child
-			break
-		end
-	end
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 12)
 
-	if not petModel then
-		warn("No visual inside the tool.")
-		return
-	end
+local Title = Instance.new("TextLabel")
+Title.Text = "✨ Xeno Pet Duper"
+Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.fromRGB(255, 80, 80)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.TextScaled = true
+Title.Parent = MainFrame
 
-	local root = character:FindFirstChild("HumanoidRootPart")
-	if not root then return end
+local DupeButton = Instance.new("TextButton")
+DupeButton.Text = "🔁 Dupe Equipped Pet"
+DupeButton.Font = Enum.Font.Gotham
+DupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+DupeButton.Size = UDim2.new(0.8, 0, 0, 45)
+DupeButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+DupeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+DupeButton.AutoButtonColor = true
+DupeButton.Parent = MainFrame
 
-	local clone
-	if petModel:IsA("Model") then
-		clone = petModel:Clone()
-	elseif petModel:IsA("Part") then
-		clone = Instance.new("Model")
-		local part = petModel:Clone()
-		part.Parent = clone
-		part.Name = "MainPart"
-		clone.PrimaryPart = part
-	end
+local DupeUICorner = Instance.new("UICorner", DupeButton)
+DupeUICorner.CornerRadius = UDim.new(0, 8)
 
-	if not clone.PrimaryPart then
-		clone.PrimaryPart = clone:FindFirstChildWhichIsA("BasePart")
-	end
+-- Function to visually dupe pet (attach clone to right hand)
+local function dupePet()
+    local equippedTool = Character:FindFirstChildOfClass("Tool")
+    if not equippedTool then return end
 
-	if not clone.PrimaryPart then
-		warn("Clone missing primary part")
-		return
-	end
+    local clone = equippedTool:Clone()
+    clone.Name = equippedTool.Name .. "_VisualClone"
 
-	local offset = Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-	clone:SetPrimaryPartCFrame(root.CFrame + offset)
+    local handle = clone:FindFirstChild("Handle") or clone:FindFirstChildWhichIsA("BasePart")
+    if handle then
+        handle.Anchored = false
+        handle.CanCollide = false
 
-	local spark = Instance.new("ParticleEmitter", clone.PrimaryPart)
-	spark.Texture = "rbxassetid://248625108"
-	spark.Rate = 40
-	spark.Lifetime = NumberRange.new(0.6)
-	spark.Color = ColorSequence.new(Color3.fromRGB(255, 85, 85))
-	spark.Speed = NumberRange.new(1)
+        -- Parent to Character so it stays with player
+        clone.Parent = Character
 
-	clone.Parent = workspace
-	rotateClone(clone)
-	Debris:AddItem(clone, 15)
-end)
+        -- Weld to right hand or right arm
+        local hand = Character:FindFirstChild("RightHand") or Character:FindFirstChild("Right Arm")
+        if hand then
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = hand
+            weld.Part1 = handle
+            weld.Parent = handle
+
+            handle.CFrame = hand.CFrame * CFrame.new(0, -0.5, -1)
+        end
+    end
+end
+
+DupeButton.MouseButton1Click:Connect(dupePet)
