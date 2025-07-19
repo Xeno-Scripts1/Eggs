@@ -7,19 +7,22 @@ local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Cleanup old UI
-if PlayerGui:FindFirstChild("XenoPetDuper") then
-    PlayerGui.XenoPetDuper:Destroy()
+-- Remove existing UI if present
+if PlayerGui:FindFirstChild("GrowGardenDupeUI") then
+    PlayerGui.GrowGardenDupeUI:Destroy()
 end
 
+-- Helper function to create gradients
 local function createGradient(frame, color1, color2)
-    local gradient = Instance.new("UIGradient", frame)
+    local gradient = Instance.new("UIGradient")
     gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)}
+    gradient.Parent = frame
     return gradient
 end
 
+-- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XenoPetDuper"
+ScreenGui.Name = "GrowGardenDupeUI"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
@@ -28,101 +31,80 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 380, 0, 200)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MainFrame.BackgroundTransparency = 1 -- transparent to show background gradient frame
+MainFrame.BackgroundColor3 = Color3.fromRGB(60, 40, 30) -- base dark brown-orange
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
-MainFrame.ZIndex = 10
 MainFrame.Parent = ScreenGui
 
--- Debug background (visible solid color, remove after confirming visible)
-local DebugBg = Instance.new("Frame")
-DebugBg.Size = UDim2.new(1, 0, 1, 0)
-DebugBg.Position = UDim2.new(0, 0, 0, 0)
-DebugBg.BackgroundColor3 = Color3.fromRGB(100, 0, 0) -- dark red for debugging
-DebugBg.BorderSizePixel = 0
-DebugBg.ZIndex = 8
-DebugBg.Parent = MainFrame
+-- Gradient Background for MainFrame
+createGradient(MainFrame, Color3.fromRGB(120, 70, 40), Color3.fromRGB(40, 25, 15))
 
--- Gradient background Frame above debug, below UI content
-local BackgroundGradientFrame = Instance.new("Frame")
-BackgroundGradientFrame.Size = UDim2.new(1, 0, 1, 0)
-BackgroundGradientFrame.Position = UDim2.new(0, 0, 0, 0)
-BackgroundGradientFrame.BackgroundColor3 = Color3.fromRGB(60, 40, 30)
-BackgroundGradientFrame.BorderSizePixel = 0
-BackgroundGradientFrame.ZIndex = 9
-BackgroundGradientFrame.Parent = MainFrame
-
-createGradient(BackgroundGradientFrame, Color3.fromRGB(60, 40, 30), Color3.fromRGB(30, 25, 20))
-
-local bgUICorner = Instance.new("UICorner", BackgroundGradientFrame)
-bgUICorner.CornerRadius = UDim.new(0, 18)
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.Parent = MainFrame
 
 -- Title Label
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -50, 0, 45)
-Title.Position = UDim2.new(0, 25, 0, 15)
+Title.Size = UDim2.new(1, -40, 0, 45)
+Title.Position = UDim2.new(0, 20, 0, 15)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "Grow A Garden Dupe"
-Title.TextColor3 = Color3.fromRGB(245, 235, 230) -- off-white
+Title.Text = "🌱 Grow A Garden Dupe"
+Title.TextColor3 = Color3.fromRGB(240, 230, 220)
 Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 11
 Title.Parent = MainFrame
 
--- Warning Label with ⚠️ icon
+-- Warning Label
 local WarningLabel = Instance.new("TextLabel")
-WarningLabel.Size = UDim2.new(1, -50, 0, 45)
-WarningLabel.Position = UDim2.new(0, 25, 0, 70)
+WarningLabel.Size = UDim2.new(1, -40, 0, 50)
+WarningLabel.Position = UDim2.new(0, 20, 0, 65)
 WarningLabel.BackgroundTransparency = 1
 WarningLabel.Font = Enum.Font.GothamBold
 WarningLabel.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
-WarningLabel.TextColor3 = Color3.fromRGB(230, 100, 80) -- warm orange-red
+WarningLabel.TextColor3 = Color3.fromRGB(255, 120, 90)
 WarningLabel.TextScaled = true
 WarningLabel.TextWrapped = true
 WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
-WarningLabel.ZIndex = 11
 WarningLabel.Parent = MainFrame
 
 -- Loading Bar Background
 local LoadingBarBackground = Instance.new("Frame")
-LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 30)
+LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 28)
 LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.55, 0)
 LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0)
-LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(55, 45, 50)
+LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(45, 30, 30)
 LoadingBarBackground.BorderSizePixel = 0
 LoadingBarBackground.ClipsDescendants = true
 LoadingBarBackground.Visible = false
-LoadingBarBackground.ZIndex = 11
 LoadingBarBackground.Parent = MainFrame
 
-local LoadingUICorner = Instance.new("UICorner", LoadingBarBackground)
-LoadingUICorner.CornerRadius = UDim.new(0, 15)
+local LoadingBarCorner = Instance.new("UICorner")
+LoadingBarCorner.CornerRadius = UDim.new(0, 14)
+LoadingBarCorner.Parent = LoadingBarBackground
 
 local LoadingBarFill = Instance.new("Frame")
 LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+LoadingBarFill.BackgroundColor3 = Color3.fromRGB(140, 50, 220)
 LoadingBarFill.BorderSizePixel = 0
-LoadingBarFill.ZIndex = 12
 LoadingBarFill.Parent = LoadingBarBackground
 
 createGradient(LoadingBarFill, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
 
-local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
-LoadingFillCorner.CornerRadius = UDim.new(0, 15)
+local LoadingFillCorner = Instance.new("UICorner")
+LoadingFillCorner.CornerRadius = UDim.new(0, 14)
+LoadingFillCorner.Parent = LoadingBarFill
 
 local LoadingPercent = Instance.new("TextLabel")
 LoadingPercent.Size = UDim2.new(1, 0, 1, 0)
 LoadingPercent.BackgroundTransparency = 1
 LoadingPercent.Font = Enum.Font.GothamBold
-LoadingPercent.TextColor3 = Color3.new(1, 1, 1)
+LoadingPercent.TextColor3 = Color3.fromRGB(255, 255, 255)
 LoadingPercent.TextScaled = true
 LoadingPercent.Text = "0%"
-LoadingPercent.ZIndex = 13
 LoadingPercent.Parent = LoadingBarBackground
 
--- Start Duping Button
+-- Start Button
 local StartButton = Instance.new("TextButton")
 StartButton.Size = UDim2.new(0.85, 0, 0, 60)
 StartButton.Position = UDim2.new(0.5, 0, 0.85, 0)
@@ -133,21 +115,21 @@ StartButton.Text = "START DUPING"
 StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextScaled = true
-StartButton.ZIndex = 11
 StartButton.Parent = MainFrame
 
-local StartButtonCorner = Instance.new("UICorner", StartButton)
+local StartButtonCorner = Instance.new("UICorner")
 StartButtonCorner.CornerRadius = UDim.new(0, 20)
+StartButtonCorner.Parent = StartButton
 
 local btnGradient = createGradient(StartButton, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
 
--- Button hover effect
 StartButton.MouseEnter:Connect(function()
     btnGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 80, 255)),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 140, 255))
     }
 end)
+
 StartButton.MouseLeave:Connect(function()
     btnGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)),
@@ -155,7 +137,7 @@ StartButton.MouseLeave:Connect(function()
     }
 end)
 
--- Dragging logic (same as before)
+-- Dragging logic
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -166,8 +148,7 @@ local function update(input)
 end
 
 MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or
-       input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
@@ -181,8 +162,7 @@ MainFrame.InputBegan:Connect(function(input)
 end)
 
 MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or
-       input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
@@ -193,7 +173,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Dupe function (same)
+-- Dupe pet function
 local function dupePet()
     local equippedTool = Character:FindFirstChildOfClass("Tool")
     if not equippedTool then
@@ -234,7 +214,7 @@ local function dupePet()
     StartButton.Text = "START DUPING"
 end
 
--- Loading bar animation
+-- Animate loading bar
 local function animateLoadingBar(duration)
     LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
     LoadingBarBackground.Visible = true
@@ -264,7 +244,7 @@ local function animateLoadingBar(duration)
     StartButton.Text = "START DUPING"
 end
 
--- Button click
+-- Start Button click
 StartButton.MouseButton1Click:Connect(function()
     if not StartButton.Active then return end
     coroutine.wrap(function()
