@@ -1,12 +1,10 @@
---// Xeno Visual Pet Duper UI with Held Pet Clone
+--// Xeno Visual Pet Duper UI with Held Pet Clone + Loading Bar
 
 -- SERVICES
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Backpack = LocalPlayer:WaitForChild("Backpack")
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- CLEANUP
@@ -21,47 +19,113 @@ ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 180)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.BorderSizePixel = 0
+MainFrame.Size = UDim2.new(0, 320, 0, 180) -- slightly taller for loading bar
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundTransparency = 0.15
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.CornerRadius = UDim.new(0, 15)
 
+-- Shadow effect
+local Shadow = Instance.new("Frame")
+Shadow.Size = UDim2.new(1, 8, 1, 8)
+Shadow.Position = UDim2.new(0, -4, 0, -4)
+Shadow.BackgroundColor3 = Color3.new(0, 0, 0)
+Shadow.BackgroundTransparency = 0.75
+Shadow.ZIndex = 0
+Shadow.AnchorPoint = Vector2.new(0, 0)
+Shadow.Parent = MainFrame
+Shadow.ClipsDescendants = false
+local shadowCorner = Instance.new("UICorner", Shadow)
+shadowCorner.CornerRadius = UDim.new(0, 15)
+
+-- Title
 local Title = Instance.new("TextLabel")
-Title.Text = "✨ Xeno Pet Duper"
-Title.Font = Enum.Font.GothamBold
-Title.TextColor3 = Color3.fromRGB(255, 80, 80)
+Title.Size = UDim2.new(1, -30, 0, 40)
+Title.Position = UDim2.new(0, 15, 0, 12)
 Title.BackgroundTransparency = 1
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Position = UDim2.new(0, 0, 0, 5)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "✨ Xeno Pet Duper"
+Title.TextColor3 = Color3.fromRGB(255, 95, 95)
 Title.TextScaled = true
+Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
+-- Separator line
+local Separator = Instance.new("Frame")
+Separator.Size = UDim2.new(1, -30, 0, 2)
+Separator.Position = UDim2.new(0, 15, 0, 55)
+Separator.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
+Separator.BorderSizePixel = 0
+Separator.Parent = MainFrame
+
+-- Loading bar container (hidden initially)
+local LoadingBarBackground = Instance.new("Frame")
+LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 24)
+LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.55, 0)
+LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0)
+LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+LoadingBarBackground.BorderSizePixel = 0
+LoadingBarBackground.Visible = false
+LoadingBarBackground.Parent = MainFrame
+
+local LoadingUICorner = Instance.new("UICorner", LoadingBarBackground)
+LoadingUICorner.CornerRadius = UDim.new(0, 12)
+
+local LoadingBarFill = Instance.new("Frame")
+LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
+LoadingBarFill.BorderSizePixel = 0
+LoadingBarFill.Parent = LoadingBarBackground
+local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
+LoadingFillCorner.CornerRadius = UDim.new(0, 12)
+
+-- Dupe Button
 local DupeButton = Instance.new("TextButton")
+DupeButton.Size = UDim2.new(0.85, 0, 0, 50)
+DupeButton.Position = UDim2.new(0.5, 0, 0.7, 0)
+DupeButton.AnchorPoint = Vector2.new(0.5, 0)
+DupeButton.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
+DupeButton.TextColor3 = Color3.new(1, 1, 1)
+DupeButton.Font = Enum.Font.GothamSemibold
 DupeButton.Text = "🔁 Dupe Equipped Pet"
-DupeButton.Font = Enum.Font.Gotham
-DupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-DupeButton.Size = UDim2.new(0.8, 0, 0, 45)
-DupeButton.Position = UDim2.new(0.1, 0, 0.45, 0)
-DupeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+DupeButton.TextScaled = true
 DupeButton.AutoButtonColor = true
 DupeButton.Parent = MainFrame
 
 local DupeUICorner = Instance.new("UICorner", DupeButton)
-DupeUICorner.CornerRadius = UDim.new(0, 8)
+DupeUICorner.CornerRadius = UDim.new(0, 12)
 
--- Function to visually dupe pet (attach clone to right hand)
+-- Button hover effect
+DupeButton.MouseEnter:Connect(function()
+    TweenService:Create(DupeButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+end)
+DupeButton.MouseLeave:Connect(function()
+    TweenService:Create(DupeButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 95, 95)}):Play()
+end)
+
+-- Dupe function
 local function dupePet()
     local equippedTool = Character:FindFirstChildOfClass("Tool")
-    if not equippedTool then return end
+    if not equippedTool then
+        DupeButton.Text = "⚠️ No pet equipped!"
+        wait(1.5)
+        DupeButton.Text = "🔁 Dupe Equipped Pet"
+        return
+    end
+
+    -- Remove previous clones to avoid clutter
+    for _, child in pairs(Character:GetChildren()) do
+        if child.Name:find("_VisualClone") then
+            child:Destroy()
+        end
+    end
 
     local clone = equippedTool:Clone()
     clone.Name = equippedTool.Name .. "_VisualClone"
@@ -71,10 +135,8 @@ local function dupePet()
         handle.Anchored = false
         handle.CanCollide = false
 
-        -- Parent to Character so it stays with player
         clone.Parent = Character
 
-        -- Weld to right hand or right arm
         local hand = Character:FindFirstChild("RightHand") or Character:FindFirstChild("Right Arm")
         if hand then
             local weld = Instance.new("WeldConstraint")
@@ -85,6 +147,37 @@ local function dupePet()
             handle.CFrame = hand.CFrame * CFrame.new(0, -0.5, -1)
         end
     end
+
+    DupeButton.Text = "✅ Pet Duplicated!"
+    wait(1.5)
+    DupeButton.Text = "🔁 Dupe Equipped Pet"
 end
 
-DupeButton.MouseButton1Click:Connect(dupePet)
+-- Function to animate loading bar
+local function animateLoadingBar(duration)
+    LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
+    LoadingBarBackground.Visible = true
+    DupeButton.Text = "⏳ Duplicating..."
+    DupeButton.AutoButtonColor = false
+    DupeButton.Active = false
+
+    local tween = TweenService:Create(LoadingBarFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)})
+    tween:Play()
+    tween.Completed:Wait()
+
+    LoadingBarBackground.Visible = false
+    DupeButton.AutoButtonColor = true
+    DupeButton.Active = true
+    DupeButton.Text = "🔁 Dupe Equipped Pet"
+end
+
+-- Combined click handler
+DupeButton.MouseButton1Click:Connect(function()
+    -- Disable repeated clicks
+    if not DupeButton.Active then return end
+
+    coroutine.wrap(function()
+        animateLoadingBar(7)
+        dupePet()
+    end)()
+end)
