@@ -1,126 +1,182 @@
---// Xeno Visual Pet Duper UI with Held Pet Clone + Loading Bar
+--// Grow A Garden Ddupe UI with Loading Bar and Draggable Frame
 
--- SERVICES
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- CLEANUP
+-- Cleanup old UI
 if PlayerGui:FindFirstChild("XenoPetDuper") then
     PlayerGui.XenoPetDuper:Destroy()
 end
 
--- UI CREATION
+-- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenoPetDuper"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
+-- Main Frame
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 320, 0, 180) -- slightly taller for loading bar
+MainFrame.Size = UDim2.new(0, 360, 0, 190)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.BackgroundTransparency = 0.6
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Active = true
-MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
+MainFrame.ClipsDescendants = true
+MainFrame.ZIndex = 5
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.CornerRadius = UDim.new(0, 16)
 
--- Shadow effect
-local Shadow = Instance.new("Frame")
-Shadow.Size = UDim2.new(1, 8, 1, 8)
-Shadow.Position = UDim2.new(0, -4, 0, -4)
-Shadow.BackgroundColor3 = Color3.new(0, 0, 0)
-Shadow.BackgroundTransparency = 0.75
-Shadow.ZIndex = 0
-Shadow.AnchorPoint = Vector2.new(0, 0)
+-- Shadow (behind MainFrame)
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 20, 1, 20)
+Shadow.Position = UDim2.new(0, -10, 0, -10)
+Shadow.BackgroundTransparency = 1
+Shadow.ZIndex = 4
 Shadow.Parent = MainFrame
-Shadow.ClipsDescendants = false
-local shadowCorner = Instance.new("UICorner", Shadow)
-shadowCorner.CornerRadius = UDim.new(0, 15)
+Shadow.Image = "rbxassetid://3526306030" -- subtle shadow image
+Shadow.ImageColor3 = Color3.new(0, 0, 0)
+Shadow.ImageTransparency = 0.7
 
 -- Title
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -30, 0, 40)
+Title.Size = UDim2.new(1, -30, 0, 44)
 Title.Position = UDim2.new(0, 15, 0, 12)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.Text = "✨ Xeno Pet Duper"
-Title.TextColor3 = Color3.fromRGB(255, 95, 95)
+Title.Text = "🌱 Grow A Garden Ddupe (Not Visual)"
+Title.TextColor3 = Color3.fromRGB(255, 100, 100)
 Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Separator line
-local Separator = Instance.new("Frame")
-Separator.Size = UDim2.new(1, -30, 0, 2)
-Separator.Position = UDim2.new(0, 15, 0, 55)
-Separator.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
-Separator.BorderSizePixel = 0
-Separator.Parent = MainFrame
+-- Warning message (centered near top)
+local WarningLabel = Instance.new("TextLabel")
+WarningLabel.Size = UDim2.new(1, -40, 0, 36)
+WarningLabel.Position = UDim2.new(0, 20, 0, 64)
+WarningLabel.BackgroundTransparency = 1
+WarningLabel.Font = Enum.Font.GothamSemibold
+WarningLabel.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
+WarningLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+WarningLabel.TextScaled = true
+WarningLabel.TextWrapped = true
+WarningLabel.TextXAlignment = Enum.TextXAlignment.Center
+WarningLabel.Parent = MainFrame
 
--- Loading bar container (hidden initially)
+-- Loading Bar Background
 local LoadingBarBackground = Instance.new("Frame")
-LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 24)
+LoadingBarBackground.Size = UDim2.new(0.85, 0, 0, 28)
 LoadingBarBackground.Position = UDim2.new(0.5, 0, 0.55, 0)
 LoadingBarBackground.AnchorPoint = Vector2.new(0.5, 0)
-LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
 LoadingBarBackground.BorderSizePixel = 0
+LoadingBarBackground.ClipsDescendants = true
 LoadingBarBackground.Visible = false
 LoadingBarBackground.Parent = MainFrame
 
 local LoadingUICorner = Instance.new("UICorner", LoadingBarBackground)
-LoadingUICorner.CornerRadius = UDim.new(0, 12)
+LoadingUICorner.CornerRadius = UDim.new(0, 14)
 
 local LoadingBarFill = Instance.new("Frame")
 LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
+LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
 LoadingBarFill.BorderSizePixel = 0
 LoadingBarFill.Parent = LoadingBarBackground
+
 local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
-LoadingFillCorner.CornerRadius = UDim.new(0, 12)
+LoadingFillCorner.CornerRadius = UDim.new(0, 14)
 
--- Dupe Button
-local DupeButton = Instance.new("TextButton")
-DupeButton.Size = UDim2.new(0.85, 0, 0, 50)
-DupeButton.Position = UDim2.new(0.5, 0, 0.7, 0)
-DupeButton.AnchorPoint = Vector2.new(0.5, 0)
-DupeButton.BackgroundColor3 = Color3.fromRGB(255, 95, 95)
-DupeButton.TextColor3 = Color3.new(1, 1, 1)
-DupeButton.Font = Enum.Font.GothamSemibold
-DupeButton.Text = "🔁 Dupe Equipped Pet"
-DupeButton.TextScaled = true
-DupeButton.AutoButtonColor = true
-DupeButton.Parent = MainFrame
+-- Loading Percentage Label
+local LoadingPercent = Instance.new("TextLabel")
+LoadingPercent.Size = UDim2.new(1, 0, 1, 0)
+LoadingPercent.BackgroundTransparency = 1
+LoadingPercent.Font = Enum.Font.GothamSemibold
+LoadingPercent.TextColor3 = Color3.new(1,1,1)
+LoadingPercent.TextScaled = true
+LoadingPercent.Text = "0%"
+LoadingPercent.Parent = LoadingBarBackground
 
-local DupeUICorner = Instance.new("UICorner", DupeButton)
-DupeUICorner.CornerRadius = UDim.new(0, 12)
+-- Start Duping Button
+local StartButton = Instance.new("TextButton")
+StartButton.Size = UDim2.new(0.85, 0, 0, 60)
+StartButton.Position = UDim2.new(0.5, 0, 0.85, 0)
+StartButton.AnchorPoint = Vector2.new(0.5, 0)
+StartButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+StartButton.TextColor3 = Color3.new(1, 1, 1)
+StartButton.Font = Enum.Font.GothamBold
+StartButton.Text = "🚀 Start Duping"
+StartButton.TextScaled = true
+StartButton.AutoButtonColor = true
+StartButton.Parent = MainFrame
 
--- Button hover effect
-DupeButton.MouseEnter:Connect(function()
-    TweenService:Create(DupeButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}):Play()
+local StartButtonCorner = Instance.new("UICorner", StartButton)
+StartButtonCorner.CornerRadius = UDim.new(0, 16)
+
+-- Button hover animation
+StartButton.MouseEnter:Connect(function()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(230, 70, 70)}):Play()
 end)
-DupeButton.MouseLeave:Connect(function()
-    TweenService:Create(DupeButton, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 95, 95)}):Play()
+StartButton.MouseLeave:Connect(function()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+
+-- Drag handling for MainFrame
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or
+       input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
 end)
 
 -- Dupe function
 local function dupePet()
     local equippedTool = Character:FindFirstChildOfClass("Tool")
     if not equippedTool then
-        DupeButton.Text = "⚠️ No pet equipped!"
+        StartButton.Text = "⚠️ No pet equipped!"
         wait(1.5)
-        DupeButton.Text = "🔁 Dupe Equipped Pet"
+        StartButton.Text = "🚀 Start Duping"
         return
     end
 
-    -- Remove previous clones to avoid clutter
+    -- Remove old visual clones
     for _, child in pairs(Character:GetChildren()) do
         if child.Name:find("_VisualClone") then
             child:Destroy()
@@ -134,7 +190,6 @@ local function dupePet()
     if handle then
         handle.Anchored = false
         handle.CanCollide = false
-
         clone.Parent = Character
 
         local hand = Character:FindFirstChild("RightHand") or Character:FindFirstChild("Right Arm")
@@ -148,34 +203,44 @@ local function dupePet()
         end
     end
 
-    DupeButton.Text = "✅ Pet Duplicated!"
+    StartButton.Text = "✅ Pet Duplicated!"
     wait(1.5)
-    DupeButton.Text = "🔁 Dupe Equipped Pet"
+    StartButton.Text = "🚀 Start Duping"
 end
 
--- Function to animate loading bar
+-- Animate loading bar with percentage
 local function animateLoadingBar(duration)
     LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
     LoadingBarBackground.Visible = true
-    DupeButton.Text = "⏳ Duplicating..."
-    DupeButton.AutoButtonColor = false
-    DupeButton.Active = false
+    LoadingPercent.Text = "0%"
+    StartButton.AutoButtonColor = false
+    StartButton.Active = false
+    StartButton.Text = "⏳ Duplicating..."
 
-    local tween = TweenService:Create(LoadingBarFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)})
-    tween:Play()
-    tween.Completed:Wait()
+    local startTime = tick()
+    local connection
+
+    connection = RunService.RenderStepped:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = math.clamp(elapsed / duration, 0, 1)
+        LoadingBarFill.Size = UDim2.new(progress, 0, 1, 0)
+        LoadingPercent.Text = string.format("%d%%", math.floor(progress * 100))
+        if progress >= 1 then
+            connection:Disconnect()
+        end
+    end)
+
+    wait(duration)
 
     LoadingBarBackground.Visible = false
-    DupeButton.AutoButtonColor = true
-    DupeButton.Active = true
-    DupeButton.Text = "🔁 Dupe Equipped Pet"
+    StartButton.AutoButtonColor = true
+    StartButton.Active = true
+    StartButton.Text = "🚀 Start Duping"
 end
 
--- Combined click handler
-DupeButton.MouseButton1Click:Connect(function()
-    -- Disable repeated clicks
-    if not DupeButton.Active then return end
-
+-- Start button click handler
+StartButton.MouseButton1Click:Connect(function()
+    if not StartButton.Active then return end
     coroutine.wrap(function()
         animateLoadingBar(7)
         dupePet()
