@@ -12,14 +12,6 @@ if PlayerGui:FindFirstChild("GrowGardenDupeUI") then
     PlayerGui.GrowGardenDupeUI:Destroy()
 end
 
--- Helper function to create gradients
-local function createGradient(frame, color1, color2)
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)}
-    gradient.Parent = frame
-    return gradient
-end
-
 -- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GrowGardenDupeUI"
@@ -40,6 +32,37 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 18)
 UICorner.Parent = MainFrame
 
+-- Close Button (X) top right
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 10) -- 10px from top-right corner
+CloseButton.AnchorPoint = Vector2.new(0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(90, 30, 30)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "✕"
+CloseButton.TextColor3 = Color3.fromRGB(255, 180, 180)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextScaled = true
+CloseButton.AutoButtonColor = true
+CloseButton.ZIndex = 15
+CloseButton.Parent = MainFrame
+
+local CloseButtonCorner = Instance.new("UICorner")
+CloseButtonCorner.CornerRadius = UDim.new(0, 8)
+CloseButtonCorner.Parent = CloseButton
+
+-- Hover effects for Close button
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(150, 50, 50), TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(90, 30, 30), TextColor3 = Color3.fromRGB(255, 180, 180)}):Play()
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
 -- Glow effect frame behind main frame for glowing button edges (for the button)
 local GlowFrame = Instance.new("Frame")
 GlowFrame.Size = UDim2.new(0.88, 0, 0, 70)
@@ -51,18 +74,15 @@ GlowFrame.ClipsDescendants = false
 GlowFrame.AnchorPoint = Vector2.new(0, 0)
 GlowFrame.Parent = MainFrame
 
-local GlowUICorner = Instance.new("UICorner")
+local GlowUICorner = Instance.new("UICorner", GlowFrame)
 GlowUICorner.CornerRadius = UDim.new(0, 20)
-GlowUICorner.Parent = GlowFrame
 
--- Blur (simulated glow) with UIGradient on GlowFrame
-local GlowGradient = Instance.new("UIGradient")
+local GlowGradient = Instance.new("UIGradient", GlowFrame)
 GlowGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 90, 255)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 50, 220))
 }
 GlowGradient.Rotation = 45
-GlowGradient.Parent = GlowFrame
 
 -- Title with warning icon (⚠️)
 local Title = Instance.new("TextLabel")
@@ -89,11 +109,11 @@ WarningLabel.TextWrapped = true
 WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
 WarningLabel.Parent = MainFrame
 
--- Start Button (above GlowFrame for layering)
+-- Start Button positioned exactly over GlowFrame, with higher ZIndex so it’s fully clickable and visible
 local StartButton = Instance.new("TextButton")
-StartButton.Size = UDim2.new(0.85, 0, 0, 60)
-StartButton.Position = UDim2.new(0.5, 0, 0.65, 0)
-StartButton.AnchorPoint = Vector2.new(0.5, 0)
+StartButton.Size = UDim2.new(0.88, 0, 0, 60)
+StartButton.Position = UDim2.new(0.06, 0, 0.65, 5)
+StartButton.AnchorPoint = Vector2.new(0, 0)
 StartButton.BackgroundColor3 = Color3.fromRGB(65, 50, 220)
 StartButton.BorderSizePixel = 0
 StartButton.Text = "START DUPING"
@@ -106,6 +126,16 @@ StartButton.Parent = MainFrame
 local StartButtonCorner = Instance.new("UICorner")
 StartButtonCorner.CornerRadius = UDim.new(0, 20)
 StartButtonCorner.Parent = StartButton
+
+-- Button hover effect (glow)
+StartButton.MouseEnter:Connect(function()
+    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(180, 90, 255)}):Play()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(100, 70, 255)}):Play()
+end)
+StartButton.MouseLeave:Connect(function()
+    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(140, 43, 226)}):Play()
+    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(65, 50, 220)}):Play()
+end)
 
 -- Loading Bar Background (hidden initially)
 local LoadingBarBackground = Instance.new("Frame")
@@ -167,16 +197,6 @@ EditionText.TextColor3 = Color3.fromRGB(180, 180, 180)
 EditionText.TextScaled = true
 EditionText.TextXAlignment = Enum.TextXAlignment.Center
 EditionText.Parent = MainFrame
-
--- Button hover glow effect
-StartButton.MouseEnter:Connect(function()
-    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(180, 90, 255)}):Play()
-    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(100, 70, 255)}):Play()
-end)
-StartButton.MouseLeave:Connect(function()
-    TweenService:Create(GlowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(140, 43, 226)}):Play()
-    TweenService:Create(StartButton, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(65, 50, 220)}):Play()
-end)
 
 -- Dragging logic
 local dragging = false
