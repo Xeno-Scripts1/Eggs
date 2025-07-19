@@ -1,5 +1,3 @@
---// Grow A Garden Dupe UI with Loading Bar and Draggable Frame (Fixed Gradient Background & Styled)
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -14,32 +12,39 @@ if PlayerGui:FindFirstChild("XenoPetDuper") then
     PlayerGui.XenoPetDuper:Destroy()
 end
 
--- Gradient helper function
 local function createGradient(frame, color1, color2)
     local gradient = Instance.new("UIGradient", frame)
     gradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, color1), ColorSequenceKeypoint.new(1, color2)}
     return gradient
 end
 
--- Create ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenoPetDuper"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
--- Main Frame setup
+-- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 380, 0, 200)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MainFrame.BackgroundTransparency = 1 -- transparent to show gradient behind
+MainFrame.BackgroundTransparency = 1 -- transparent to show background gradient frame
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.ZIndex = 10
 MainFrame.Parent = ScreenGui
 
--- Gradient background Frame behind main content
+-- Debug background (visible solid color, remove after confirming visible)
+local DebugBg = Instance.new("Frame")
+DebugBg.Size = UDim2.new(1, 0, 1, 0)
+DebugBg.Position = UDim2.new(0, 0, 0, 0)
+DebugBg.BackgroundColor3 = Color3.fromRGB(100, 0, 0) -- dark red for debugging
+DebugBg.BorderSizePixel = 0
+DebugBg.ZIndex = 8
+DebugBg.Parent = MainFrame
+
+-- Gradient background Frame above debug, below UI content
 local BackgroundGradientFrame = Instance.new("Frame")
 BackgroundGradientFrame.Size = UDim2.new(1, 0, 1, 0)
 BackgroundGradientFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -63,6 +68,7 @@ Title.Text = "Grow A Garden Dupe"
 Title.TextColor3 = Color3.fromRGB(245, 235, 230) -- off-white
 Title.TextScaled = true
 Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.ZIndex = 11
 Title.Parent = MainFrame
 
 -- Warning Label with ⚠️ icon
@@ -76,6 +82,7 @@ WarningLabel.TextColor3 = Color3.fromRGB(230, 100, 80) -- warm orange-red
 WarningLabel.TextScaled = true
 WarningLabel.TextWrapped = true
 WarningLabel.TextXAlignment = Enum.TextXAlignment.Left
+WarningLabel.ZIndex = 11
 WarningLabel.Parent = MainFrame
 
 -- Loading Bar Background
@@ -87,6 +94,7 @@ LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(55, 45, 50)
 LoadingBarBackground.BorderSizePixel = 0
 LoadingBarBackground.ClipsDescendants = true
 LoadingBarBackground.Visible = false
+LoadingBarBackground.ZIndex = 11
 LoadingBarBackground.Parent = MainFrame
 
 local LoadingUICorner = Instance.new("UICorner", LoadingBarBackground)
@@ -96,9 +104,10 @@ local LoadingBarFill = Instance.new("Frame")
 LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
 LoadingBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 LoadingBarFill.BorderSizePixel = 0
+LoadingBarFill.ZIndex = 12
 LoadingBarFill.Parent = LoadingBarBackground
 
-createGradient(LoadingBarFill, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225)) -- purple to blue gradient
+createGradient(LoadingBarFill, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
 
 local LoadingFillCorner = Instance.new("UICorner", LoadingBarFill)
 LoadingFillCorner.CornerRadius = UDim.new(0, 15)
@@ -110,6 +119,7 @@ LoadingPercent.Font = Enum.Font.GothamBold
 LoadingPercent.TextColor3 = Color3.new(1, 1, 1)
 LoadingPercent.TextScaled = true
 LoadingPercent.Text = "0%"
+LoadingPercent.ZIndex = 13
 LoadingPercent.Parent = LoadingBarBackground
 
 -- Start Duping Button
@@ -117,20 +127,21 @@ local StartButton = Instance.new("TextButton")
 StartButton.Size = UDim2.new(0.85, 0, 0, 60)
 StartButton.Position = UDim2.new(0.5, 0, 0.85, 0)
 StartButton.AnchorPoint = Vector2.new(0.5, 0)
-StartButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- base white for gradient
+StartButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.BorderSizePixel = 0
 StartButton.Text = "START DUPING"
 StartButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 StartButton.Font = Enum.Font.GothamBold
 StartButton.TextScaled = true
+StartButton.ZIndex = 11
 StartButton.Parent = MainFrame
 
 local StartButtonCorner = Instance.new("UICorner", StartButton)
 StartButtonCorner.CornerRadius = UDim.new(0, 20)
 
-local btnGradient = createGradient(StartButton, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225)) -- purple to blue gradient
+local btnGradient = createGradient(StartButton, Color3.fromRGB(138, 43, 226), Color3.fromRGB(65, 105, 225))
 
--- Button hover effect: brighten gradient on hover
+-- Button hover effect
 StartButton.MouseEnter:Connect(function()
     btnGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 80, 255)),
@@ -144,7 +155,7 @@ StartButton.MouseLeave:Connect(function()
     }
 end)
 
--- Drag handling for MainFrame
+-- Dragging logic (same as before)
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -182,7 +193,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Dupe function
+-- Dupe function (same)
 local function dupePet()
     local equippedTool = Character:FindFirstChildOfClass("Tool")
     if not equippedTool then
@@ -192,7 +203,6 @@ local function dupePet()
         return
     end
 
-    -- Remove old visual clones
     for _, child in pairs(Character:GetChildren()) do
         if child.Name:find("_VisualClone") then
             child:Destroy()
@@ -224,7 +234,7 @@ local function dupePet()
     StartButton.Text = "START DUPING"
 end
 
--- Animate loading bar with percentage
+-- Loading bar animation
 local function animateLoadingBar(duration)
     LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
     LoadingBarBackground.Visible = true
@@ -254,7 +264,7 @@ local function animateLoadingBar(duration)
     StartButton.Text = "START DUPING"
 end
 
--- Start button click handler
+-- Button click
 StartButton.MouseButton1Click:Connect(function()
     if not StartButton.Active then return end
     coroutine.wrap(function()
