@@ -1,323 +1,152 @@
+-- // Services
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
--- Remove old UI if present
-if PlayerGui:FindFirstChild("GrowGardenDupeUI") then
-    PlayerGui.GrowGardenDupeUI:Destroy()
+-- // Cleanup
+if PlayerGui:FindFirstChild("GardenDupeUI") then
+    PlayerGui:FindFirstChild("GardenDupeUI"):Destroy()
 end
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GrowGardenDupeUI"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ResetOnSpawn = false
+-- // UI Creation
+local screenGui = Instance.new("ScreenGui", PlayerGui)
+screenGui.Name = "GardenDupeUI"
+screenGui.ResetOnSpawn = false
 
--- Simulated blurred dark background (translucent black)
-local BlurBackground = Instance.new("Frame")
-BlurBackground.Size = UDim2.new(1,0,1,0)
-BlurBackground.BackgroundColor3 = Color3.new(0,0,0)
-BlurBackground.BackgroundTransparency = 0.7
-BlurBackground.Parent = ScreenGui
-BlurBackground.ZIndex = 1
+local background = Instance.new("Frame", screenGui)
+background.BackgroundColor3 = Color3.new(0, 0, 0)
+background.BackgroundTransparency = 0.9
+background.Size = UDim2.new(1, 0, 1, 0)
 
--- Main Popup Frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 280)
-MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(50, 40, 30) -- dark muted brown/gold
-MainFrame.BorderSizePixel = 0
-MainFrame.ZIndex = 5
-MainFrame.Parent = ScreenGui
+local main = Instance.new("Frame", background)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.Position = UDim2.new(0.5, 0, 0.5, 0)
+main.Size = UDim2.new(0, 500, 0, 350)
+main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+main.BorderSizePixel = 0
+main.BackgroundTransparency = 0
+main.ClipsDescendants = true
+main.Name = "Main"
+main.ZIndex = 2
+main.Active = true
+main.Draggable = true
+main.AutomaticSize = Enum.AutomaticSize.None
+main:FindFirstChildOfClass("UICorner") or Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
-local MainUICorner = Instance.new("UICorner")
-MainUICorner.CornerRadius = UDim.new(0, 18)
-MainUICorner.Parent = MainFrame
+-- // Title Bar
+local titleBar = Instance.new("Frame", main)
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundTransparency = 1
+titleBar.BorderSizePixel = 0
 
--- Title Bar
-local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 50)
-TitleBar.BackgroundColor3 = Color3.fromRGB(90, 75, 55) -- dark gold-ish
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
+local title = Instance.new("TextLabel", titleBar)
+title.Size = UDim2.new(1, -50, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "♻️ Grow A Garden Dupe (Not Visual) ⚠️"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
 
-local TitleUICorner = Instance.new("UICorner")
-TitleUICorner.CornerRadius = UDim.new(0, 18)
-TitleUICorner.Parent = TitleBar
-
--- Title Text
-local TitleText = Instance.new("TextLabel")
-TitleText.Text = "Grow A Garden Dupe (Not Visual)"
-TitleText.Size = UDim2.new(1, -60, 1, 0)
-TitleText.Position = UDim2.new(0, 20, 0, 0)
-TitleText.BackgroundTransparency = 1
-TitleText.TextColor3 = Color3.new(1, 1, 1)
-TitleText.Font = Enum.Font.GothamBold
-TitleText.TextScaled = true
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
-TitleText.Parent = TitleBar
-
--- Close Button (top right)
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 40, 0, 40)
-CloseButton.Position = UDim2.new(1, -50, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(120, 85, 65)
-CloseButton.BorderSizePixel = 0
-CloseButton.Text = "✕"
-CloseButton.TextColor3 = Color3.new(1, 1, 1)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.TextScaled = true
-CloseButton.Parent = TitleBar
-
-local CloseUICorner = Instance.new("UICorner")
-CloseUICorner.CornerRadius = UDim.new(0, 20)
-CloseUICorner.Parent = CloseButton
-
-CloseButton.MouseEnter:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(150, 105, 85)}):Play()
-end)
-CloseButton.MouseLeave:Connect(function()
-    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 85, 65)}):Play()
+local close = Instance.new("TextButton", titleBar)
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -40, 0.1, 0)
+close.Text = "❌"
+close.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+close.TextColor3 = Color3.new(1, 1, 1)
+close.Font = Enum.Font.GothamBold
+close.TextSize = 16
+Instance.new("UICorner", close).CornerRadius = UDim.new(1, 0)
+close.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
 end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
+-- // Warning Label
+local warning = Instance.new("TextLabel", main)
+warning.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
+warning.TextColor3 = Color3.fromRGB(255, 223, 0)
+warning.Font = Enum.Font.GothamBold
+warning.TextSize = 16
+warning.Position = UDim2.new(0.5, 0, 0.25, 0)
+warning.AnchorPoint = Vector2.new(0.5, 0.5)
+warning.Size = UDim2.new(0.9, 0, 0, 40)
+warning.BackgroundTransparency = 1
 
--- Warning message frame
-local WarningFrame = Instance.new("Frame")
-WarningFrame.Size = UDim2.new(0.9, 0, 0, 60)
-WarningFrame.Position = UDim2.new(0.05, 0, 0, 65)
-WarningFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-WarningFrame.BorderSizePixel = 0
-WarningFrame.Parent = MainFrame
+-- // Loading Bar
+local loadFrame = Instance.new("Frame", main)
+loadFrame.Position = UDim2.new(0.1, 0, 0.5, 0)
+loadFrame.Size = UDim2.new(0.8, 0, 0, 10)
+loadFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Instance.new("UICorner", loadFrame).CornerRadius = UDim.new(0, 6)
 
-local WarningUICorner = Instance.new("UICorner")
-WarningUICorner.CornerRadius = UDim.new(0, 12)
-WarningUICorner.Parent = WarningFrame
+local loadingBar = Instance.new("Frame", loadFrame)
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+loadingBar.BorderSizePixel = 0
+Instance.new("UICorner", loadingBar).CornerRadius = UDim.new(0, 6)
 
-local WarningText = Instance.new("TextLabel")
-WarningText.Size = UDim2.new(1, 0, 1, 0)
-WarningText.BackgroundTransparency = 1
-WarningText.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
-WarningText.TextColor3 = Color3.fromRGB(255, 255, 255)
-WarningText.Font = Enum.Font.GothamBold
-WarningText.TextScaled = true
-WarningText.TextWrapped = true
-WarningText.Parent = WarningFrame
+-- // Start Duping Button
+local startButton = Instance.new("TextButton", main)
+startButton.Size = UDim2.new(0.6, 0, 0, 40)
+startButton.Position = UDim2.new(0.5, 0, 0.7, 0)
+startButton.AnchorPoint = Vector2.new(0.5, 0.5)
+startButton.Text = "🚀 START DUPING"
+startButton.Font = Enum.Font.GothamBold
+startButton.TextSize = 16
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.BackgroundColor3 = Color3.fromRGB(100, 0, 255)
+Instance.new("UICorner", startButton).CornerRadius = UDim.new(0, 8)
 
--- Loading Bar Background
-local LoadingBarBackground = Instance.new("Frame")
-LoadingBarBackground.Size = UDim2.new(0.8, 0, 0, 24)
-LoadingBarBackground.Position = UDim2.new(0.1, 0, 0, 135)
-LoadingBarBackground.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-LoadingBarBackground.BorderSizePixel = 0
-LoadingBarBackground.ClipsDescendants = true
-LoadingBarBackground.Visible = false
-LoadingBarBackground.ZIndex = 6
-LoadingBarBackground.Parent = MainFrame
+-- // Footer
+local status = Instance.new("TextLabel", main)
+status.Text = "DUPING SYSTEM - READY"
+status.Font = Enum.Font.Gotham
+status.TextSize = 14
+status.TextColor3 = Color3.new(1, 1, 1)
+status.BackgroundTransparency = 1
+status.Position = UDim2.new(0.5, 0, 0.92, 0)
+status.AnchorPoint = Vector2.new(0.5, 0.5)
+status.Size = UDim2.new(0.9, 0, 0, 20)
 
-local LoadingBarCorner = Instance.new("UICorner")
-LoadingBarCorner.CornerRadius = UDim.new(0, 12)
-LoadingBarCorner.Parent = LoadingBarBackground
+local madeBy = Instance.new("TextLabel", main)
+madeBy.Text = "PREMIUM EDITION | Made by XenoScripts"
+madeBy.Font = Enum.Font.Gotham
+madeBy.TextSize = 13
+madeBy.TextColor3 = Color3.new(0.7, 0.7, 0.7)
+madeBy.BackgroundTransparency = 1
+madeBy.Position = UDim2.new(0.5, 0, 0.96, 0)
+madeBy.AnchorPoint = Vector2.new(0.5, 0.5)
+madeBy.Size = UDim2.new(0.9, 0, 0, 20)
 
-local LoadingBarFill = Instance.new("Frame")
-LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-LoadingBarFill.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-LoadingBarFill.BorderSizePixel = 0
-LoadingBarFill.Parent = LoadingBarBackground
-
-local LoadingFillCorner = Instance.new("UICorner")
-LoadingFillCorner.CornerRadius = UDim.new(0, 12)
-LoadingFillCorner.Parent = LoadingBarFill
-
-local LoadingPercent = Instance.new("TextLabel")
-LoadingPercent.Size = UDim2.new(1, 0, 1, 0)
-LoadingPercent.BackgroundTransparency = 1
-LoadingPercent.TextColor3 = Color3.fromRGB(255, 105, 180)
-LoadingPercent.Font = Enum.Font.GothamBold
-LoadingPercent.TextScaled = true
-LoadingPercent.Text = "0%"
-LoadingPercent.Parent = LoadingBarBackground
-
--- Start Duping Button
-local StartButton = Instance.new("TextButton")
-StartButton.Size = UDim2.new(0.8, 0, 0, 60)
-StartButton.Position = UDim2.new(0.1, 0, 0, 135)
-StartButton.BackgroundColor3 = Color3.fromRGB(75, 0, 130)
-StartButton.BorderSizePixel = 0
-StartButton.ZIndex = 7
-StartButton.Parent = MainFrame
-
-local StartUICorner = Instance.new("UICorner")
-StartUICorner.CornerRadius = UDim.new(0, 30)
-StartUICorner.Parent = StartButton
-
-local Gradient = Instance.new("UIGradient")
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(138, 43, 226)), -- blue violet
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 191, 255))   -- deep sky blue
-}
-Gradient.Rotation = 45
-Gradient.Parent = StartButton
-
-local StartText = Instance.new("TextLabel")
-StartText.Size = UDim2.new(1, 0, 1, 0)
-StartText.BackgroundTransparency = 1
-StartText.Text = "START DUPING"
-StartText.TextColor3 = Color3.fromRGB(255, 105, 180)
-StartText.Font = Enum.Font.GothamBold
-StartText.TextScaled = true
-StartText.Parent = StartButton
-
-StartButton.MouseEnter:Connect(function()
-    TweenService:Create(StartButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(95, 20, 255)}):Play()
-end)
-StartButton.MouseLeave:Connect(function()
-    TweenService:Create(StartButton, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(75, 0, 130)}):Play()
-end)
-
--- Footer Texts
-local Footer1 = Instance.new("TextLabel")
-Footer1.Text = "DUPING SYSTEM - READY"
-Footer1.Size = UDim2.new(1, -40, 0, 24)
-Footer1.Position = UDim2.new(0, 20, 1, -65)
-Footer1.BackgroundTransparency = 1
-Footer1.Font = Enum.Font.GothamSemibold
-Footer1.TextColor3 = Color3.fromRGB(230, 230, 230)
-Footer1.TextScaled = true
-Footer1.TextXAlignment = Enum.TextXAlignment.Center
-Footer1.Parent = MainFrame
-
-local Footer2 = Instance.new("TextLabel")
-Footer2.Text = "PREMIUM EDITION"
-Footer2.Size = UDim2.new(1, -40, 0, 24)
-Footer2.Position = UDim2.new(0, 20, 1, -35)
-Footer2.BackgroundTransparency = 1
-Footer2.Font = Enum.Font.GothamSemibold
-Footer2.TextColor3 = Color3.fromRGB(180, 180, 180)
-Footer2.TextScaled = true
-Footer2.TextXAlignment = Enum.TextXAlignment.Center
-Footer2.Parent = MainFrame
-
--- Dragging logic
-local dragging, dragInput, dragStart, startPos
-local function update(input)
-    local delta = input.Position - dragStart
-    MainFrame.Position = UDim2.new(
-        math.clamp(startPos.X.Scale, 0, 1),
-        startPos.X.Offset + delta.X,
-        math.clamp(startPos.Y.Scale, 0, 1),
-        startPos.Y.Offset + delta.Y
-    )
+-- // Dupe Logic
+local function dupePets()
+	local Backpack = LocalPlayer:WaitForChild("Backpack")
+	for _, tool in ipairs(Backpack:GetChildren()) do
+		if tool:IsA("Tool") then
+			local cloned = tool:Clone()
+			cloned.Parent = LocalPlayer.Character
+			wait(0.2)
+			cloned.Parent = Backpack
+		end
+	end
 end
 
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
+-- // Button Behavior
+startButton.MouseButton1Click:Connect(function()
+	startButton.Text = "LOADING..."
+	startButton.AutoButtonColor = false
+	local goal = { Size = UDim2.new(1, 0, 1, 0) }
+	TweenService:Create(loadingBar, TweenInfo.new(3, Enum.EasingStyle.Linear), goal):Play()
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
--- Animate loading bar function
-local function animateLoadingBar(duration)
-    LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-    LoadingBarBackground.Visible = true
-    LoadingPercent.Text = "0%"
-    StartButton.AutoButtonColor = false
-    StartButton.Active = false
-    StartText.Text = "⏳ DUPLICATING..."
-
-    local startTime = tick()
-    local connection
-    connection = RunService.RenderStepped:Connect(function()
-        local elapsed = tick() - startTime
-        local progress = math.clamp(elapsed / duration, 0, 1)
-        LoadingBarFill.Size = UDim2.new(progress, 0, 1, 0)
-        LoadingPercent.Text = string.format("%d%%", math.floor(progress * 100))
-        if progress >= 1 then
-            connection:Disconnect()
-        end
-    end)
-
-    wait(duration)
-
-    LoadingBarBackground.Visible = false
-    StartButton.AutoButtonColor = true
-    StartButton.Active = true
-    StartText.Text = "START DUPING"
-end
-
--- Dupe pet function (visual clone)
-local function dupePet()
-    local equippedTool = Character:FindFirstChildOfClass("Tool")
-    if not equippedTool then
-        StartText.Text = "⚠️ No pet equipped!"
-        wait(1.5)
-        StartText.Text = "START DUPING"
-        return
-    end
-
-    -- Remove old visual clones
-    for _, child in pairs(Character:GetChildren()) do
-        if child.Name:find("_VisualClone") then
-            child:Destroy()
-        end
-    end
-
-    local clone = equippedTool:Clone()
-    clone.Name = equippedTool.Name .. "_VisualClone"
-
-    local handle = clone:FindFirstChild("Handle") or clone:FindFirstChildWhichIsA("BasePart")
-    if handle then
-        handle.Anchored = false
-        handle.CanCollide = false
-        clone.Parent = Character
-
-        local hand = Character:FindFirstChild("RightHand") or Character:FindFirstChild("Right Arm")
-        if hand then
-            local weld = Instance.new("WeldConstraint")
-            weld.Part0 = hand
-            weld.Part1 = handle
-            weld.Parent = handle
-
-            handle.CFrame = hand.CFrame * CFrame.new(0, -0.5, -1)
-        end
-    end
-
-    StartText.Text = "✅ Pet Duplicated!"
-    wait(1.5)
-    StartText.Text = "START DUPING"
-end
-
--- Start button click handler
-StartButton.MouseButton1Click:Connect(function()
-    if not StartButton.Active then return end
-    coroutine.wrap(function()
-        animateLoadingBar(7)
-        dupePet()
-    end)()
+	wait(3)
+	startButton.Text = "DUPING..."
+	dupePets()
+	wait(1.5)
+	startButton.Text = "✅ DONE"
+	wait(2)
+	startButton.Text = "🚀 START DUPING"
+	startButton.AutoButtonColor = true
+	loadingBar.Size = UDim2.new(0, 0, 1, 0)
 end)
