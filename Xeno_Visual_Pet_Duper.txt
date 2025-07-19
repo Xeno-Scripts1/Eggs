@@ -1,4 +1,4 @@
---// Grow A Garden Dupe UI with Loading Bar and Draggable Frame (Styled as requested)
+--// Grow A Garden Dupe UI with Loading Bar and Draggable Frame (Fixed Gradient Background & Styled)
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -27,22 +27,31 @@ ScreenGui.Name = "XenoPetDuper"
 ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
--- Main Frame
+-- Main Frame setup
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 380, 0, 200)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 26, 18) -- muted brownish-orange base
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.BackgroundTransparency = 1 -- transparent to show gradient behind
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.ZIndex = 10
 MainFrame.Parent = ScreenGui
 
--- Background gradient blending brownish-orange and dark grayish-brown
-createGradient(MainFrame, Color3.fromRGB(60, 40, 30), Color3.fromRGB(30, 25, 20))
+-- Gradient background Frame behind main content
+local BackgroundGradientFrame = Instance.new("Frame")
+BackgroundGradientFrame.Size = UDim2.new(1, 0, 1, 0)
+BackgroundGradientFrame.Position = UDim2.new(0, 0, 0, 0)
+BackgroundGradientFrame.BackgroundColor3 = Color3.fromRGB(60, 40, 30)
+BackgroundGradientFrame.BorderSizePixel = 0
+BackgroundGradientFrame.ZIndex = 9
+BackgroundGradientFrame.Parent = MainFrame
 
-local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 18)
+createGradient(BackgroundGradientFrame, Color3.fromRGB(60, 40, 30), Color3.fromRGB(30, 25, 20))
+
+local bgUICorner = Instance.new("UICorner", BackgroundGradientFrame)
+bgUICorner.CornerRadius = UDim.new(0, 18)
 
 -- Title Label
 local Title = Instance.new("TextLabel")
