@@ -272,24 +272,11 @@ local function createVisualPetCopy()
         end
     end)
 
-    -- Floating handle effect without anchoring (allows player movement)
+    -- Just disable collisions but do NOT animate handle CFrame, so player can move normally
     if visualClone:IsA("Tool") and visualClone:FindFirstChild("Handle") then
         local handle = visualClone.Handle
         handle.CanCollide = false
-
-        local startCFrame = handle.CFrame
-        local amplitude = 0.3
-        local frequency = 2
-
-        local connection
-        connection = RunService.Heartbeat:Connect(function(time)
-            if not handle or not handle.Parent then
-                connection:Disconnect()
-                return
-            end
-            local offset = Vector3.new(0, amplitude * math.sin(time * frequency), 0)
-            handle.CFrame = startCFrame * CFrame.new(offset)
-        end)
+        -- Removed CFrame animation so character can move freely while holding pet
     end
 
     return true
