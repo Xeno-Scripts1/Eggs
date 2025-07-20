@@ -20,9 +20,11 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 300)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.BackgroundTransparency = 0.1
+mainFrame.BackgroundTransparency = 0.2 -- 80% transparency
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
+mainFrame.Active = true
+mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
 -- Rounded corners
@@ -33,7 +35,8 @@ corner.Parent = mainFrame
 -- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundTransparency = 1
+titleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
@@ -43,9 +46,9 @@ titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.TextSize = 20
 titleLabel.TextColor3 = Color3.new(1, 1, 1)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Size = UDim2.new(1, -40, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
 titleLabel.Parent = titleBar
 
 -- Close Button
@@ -88,7 +91,7 @@ dupeButton.TextSize = 22
 dupeButton.TextColor3 = Color3.new(1, 1, 1)
 dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
 dupeButton.Size = UDim2.new(0.8, 0, 0, 45)
-dupeButton.Position = UDim2.new(0.1, 0, 0, 120)
+dupeButton.Position = UDim2.new(0.1, 0, 0, 180) -- Lowered slightly
 dupeButton.Parent = mainFrame
 
 local dupeCorner = Instance.new("UICorner")
