@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -18,7 +19,7 @@ screenGui.Parent = PlayerGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 330) -- Increased height to fit error message
+mainFrame.Size = UDim2.new(0, 450, 0, 330) -- height increased for messages
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -165)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.2
@@ -166,6 +167,37 @@ local loadingBarCorner = Instance.new("UICorner")
 loadingBarCorner.CornerRadius = UDim.new(0, 8)
 loadingBarCorner.Parent = loadingBar
 
+-- Loading Percentage Text above loading bar
+local loadingPercentLabel = Instance.new("TextLabel")
+loadingPercentLabel.Text = "0%"
+loadingPercentLabel.Font = Enum.Font.SourceSansBold
+loadingPercentLabel.TextSize = 16
+loadingPercentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+loadingPercentLabel.BackgroundTransparency = 1
+loadingPercentLabel.Size = UDim2.new(0.8, 0, 0, 20)
+loadingPercentLabel.Position = UDim2.new(0.1, 0, 0, 105)
+loadingPercentLabel.TextXAlignment = Enum.TextXAlignment.Center
+loadingPercentLabel.Parent = mainFrame
+loadingPercentLabel.Visible = false
+
+-- Duping Complete Popup (initially invisible)
+local dupingCompleteLabel = Instance.new("TextLabel")
+dupingCompleteLabel.Text = "DUPING COMPLETE!"
+dupingCompleteLabel.Font = Enum.Font.SourceSansBold
+dupingCompleteLabel.TextSize = 20
+dupingCompleteLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+dupingCompleteLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+dupingCompleteLabel.BackgroundTransparency = 0.2
+dupingCompleteLabel.Size = UDim2.new(0.6, 0, 0, 40)
+dupingCompleteLabel.Position = UDim2.new(0.2, 0, 0, 225)
+dupingCompleteLabel.TextXAlignment = Enum.TextXAlignment.Center
+dupingCompleteLabel.Visible = false
+dupingCompleteLabel.Parent = mainFrame
+
+local dupingCompleteCorner = Instance.new("UICorner")
+dupingCompleteCorner.CornerRadius = UDim.new(0, 10)
+dupingCompleteCorner.Parent = dupingCompleteLabel
+
 -- Start Duping Button
 local dupeButton = Instance.new("TextButton")
 dupeButton.Text = "START DUPING"
@@ -188,40 +220,19 @@ dupeButton.MouseLeave:Connect(function()
     dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
 end)
 
--- Footer Text
-local footerTop = Instance.new("TextLabel")
-footerTop.Text = "DUPING SYSTEM - READY"
-footerTop.Font = Enum.Font.SourceSansBold
-footerTop.TextSize = 16
-footerTop.TextColor3 = Color3.fromRGB(200, 200, 200)
-footerTop.BackgroundTransparency = 1
-footerTop.Size = UDim2.new(1, 0, 0, 20)
-footerTop.Position = UDim2.new(0, 0, 1, -40)
-footerTop.Parent = mainFrame
-
-local footerBottom = Instance.new("TextLabel")
-footerBottom.Text = "PREMIUM EDITION | Made by XenoScripts"
-footerBottom.Font = Enum.Font.SourceSansItalic
-footerBottom.TextSize = 14
-footerBottom.TextColor3 = Color3.fromRGB(160, 160, 160)
-footerBottom.BackgroundTransparency = 1
-footerBottom.Size = UDim2.new(1, 0, 0, 20)
-footerBottom.Position = UDim2.new(0, 0, 1, -20)
-footerBottom.Parent = mainFrame
-
--- Visual Dupe Logic: clone held pet, put in Backpack, equip it, add floating effect, cleanup after 30 sec
+-- Visual Dupe Logic: clone held pet, put in Backpack, equip it, floating effect, no anchored parts to allow movement
 local function createVisualPetCopy()
     local character = LocalPlayer.Character
-    if not character then return end
+    if not character then return false end
 
     local petTool = character:FindFirstChildOfClass("Tool")
     if not petTool then
-        return false -- Indicate failure
+        return false
     end
 
     -- Clone the pet tool for visual dupe
     local visualClone = petTool:Clone()
-    visualClone.Name = petTool.Name .. "_VisualDupe"
+    visualClone.Name = petTool.Name .. "_VisualDupe_" .. tostring(tick()):gsub("%.", "")
 
     -- Put clone into Backpack (hotbar)
     visualClone.Parent = LocalPlayer:WaitForChild("Backpack")
@@ -233,44 +244,44 @@ local function createVisualPetCopy()
         end
     end)
 
-    -- Floating effect on the handle if available
+    -- Floating effect on the handle if available, but do NOT anchor it so player can move
     if visualClone:IsA("Tool") and visualClone:FindFirstChild("Handle") then
         local handle = visualClone.Handle
-        if not handle.Anchored then
-            handle.Anchored = true
-            handle.CanCollide = false
+        handle.CanCollide = false
 
-            local startPos = handle.Position
-            local amplitude = 0.3
-            local frequency = 2
+        local startCFrame = handle.CFrame
+        local amplitude = 0.3
+        local frequency = 2
 
-            local connection
-            connection = RunService.Heartbeat:Connect(function(time)
-                if not handle or not handle.Parent then
-                    connection:Disconnect()
-                    return
-                end
-                handle.Position = startPos + Vector3.new(0, amplitude * math.sin(time * frequency), 0)
-            end)
+        local connection
+        connection = RunService.Heartbeat:Connect(function(time)
+            if not handle or not handle.Parent then
+                connection:Disconnect()
+                return
+            end
+            -- Float up/down by small offset from original CFrame (use CFrame to avoid anchoring)
+            local offset = Vector3.new(0, amplitude * math.sin(time * frequency), 0)
+            handle.CFrame = startCFrame * CFrame.new(offset)
+        end)
 
-            -- Cleanup after 30 seconds
-            delay(30, function()
-                if visualClone then
-                    visualClone:Destroy()
-                end
-                if connection then
-                    connection:Disconnect()
-                end
-            end)
-        end
+        -- Cleanup after 30 seconds
+        delay(30, function()
+            if visualClone then
+                visualClone:Destroy()
+            end
+            if connection then
+                connection:Disconnect()
+            end
+        end)
     end
 
-    return true -- Success
+    return true
 end
 
--- Loading bar animation function
+-- Loading bar animation function with percentage text update
 local function startLoadingBar(duration, callback)
     loadingBarContainer.Visible = true
+    loadingPercentLabel.Visible = true
     loadingBar.Size = UDim2.new(0, 0, 1, 0)
 
     local startTime = tick()
@@ -281,6 +292,9 @@ local function startLoadingBar(duration, callback)
         local progress = math.clamp(elapsed / duration, 0, 1)
         loadingBar.Size = UDim2.new(progress, 0, 1, 0)
 
+        -- Update percentage text
+        loadingPercentLabel.Text = tostring(math.floor(progress * 100)) .. "%"
+
         -- Pulsing glow effect
         local pulse = 0.5 + 0.5 * math.sin(elapsed * 8)
         loadingBar.BackgroundColor3 = Color3.fromHSV(0.75, 1, pulse * 0.8 + 0.2)
@@ -288,6 +302,7 @@ local function startLoadingBar(duration, callback)
         if progress >= 1 then
             conn:Disconnect()
             loadingBarContainer.Visible = false
+            loadingPercentLabel.Visible = false
             callback()
         end
     end)
@@ -302,18 +317,44 @@ local function showError(message)
     end)
 end
 
+-- Show duping complete message function
+local function showDupingComplete()
+    dupingCompleteLabel.Visible = true
+    dupingCompleteLabel.TextTransparency = 1
+
+    -- Fade in
+    TweenService:Create(dupingCompleteLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+
+    -- Fade out after 3 seconds
+    delay(3, function()
+        TweenService:Create(dupingCompleteLabel, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+        task.delay(0.5, function()
+            dupingCompleteLabel.Visible = false
+        end)
+    end)
+end
+
 -- Connect the start dupe button
 dupeButton.MouseButton1Click:Connect(function()
     footerTop.Text = "DUPING SYSTEM - READY" -- Reset footer text
-    local success = createVisualPetCopy()
-    if not success then
-        showError("Error: You must be holding out a pet tool to dupe!")
+
+    -- Check if player is holding pet BEFORE loading
+    local character = LocalPlayer.Character
+    local petTool = character and character:FindFirstChildOfClass("Tool")
+    if not petTool then
+        showError("You must be holding out a pet to dupe!")
         return
     end
 
     footerTop.Text = "DUPING SYSTEM - LOADING..."
     startLoadingBar(10, function()
         footerTop.Text = "DUPING SYSTEM - VISUAL DUPE ACTIVE"
-        -- Visual dupe already created before loading to avoid delay in UI
+        -- Create the visual pet AFTER loading completes
+        local success = createVisualPetCopy()
+        if success then
+            showDupingComplete()
+        else
+            showError("Failed to create visual dupe.")
+        end
     end)
 end)
