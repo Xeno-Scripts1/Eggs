@@ -167,18 +167,19 @@ local loadingBarCorner = Instance.new("UICorner")
 loadingBarCorner.CornerRadius = UDim.new(0, 8)
 loadingBarCorner.Parent = loadingBar
 
--- Loading Percentage Text above loading bar
-local loadingPercentLabel = Instance.new("TextLabel")
-loadingPercentLabel.Text = "0%"
-loadingPercentLabel.Font = Enum.Font.SourceSansBold
-loadingPercentLabel.TextSize = 16
-loadingPercentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-loadingPercentLabel.BackgroundTransparency = 1
-loadingPercentLabel.Size = UDim2.new(0.8, 0, 0, 20)
-loadingPercentLabel.Position = UDim2.new(0.1, 0, 0, 105)
-loadingPercentLabel.TextXAlignment = Enum.TextXAlignment.Center
-loadingPercentLabel.Parent = mainFrame
-loadingPercentLabel.Visible = false
+-- Percentage text inside loading bar
+local loadingPercentInside = Instance.new("TextLabel")
+loadingPercentInside.Text = "0%"
+loadingPercentInside.Font = Enum.Font.SourceSansBold
+loadingPercentInside.TextSize = 16
+loadingPercentInside.TextColor3 = Color3.new(1, 1, 1)
+loadingPercentInside.BackgroundTransparency = 1
+loadingPercentInside.Size = UDim2.new(1, 0, 1, 0)
+loadingPercentInside.Position = UDim2.new(0, 0, 0, 0)
+loadingPercentInside.TextXAlignment = Enum.TextXAlignment.Center
+loadingPercentInside.TextYAlignment = Enum.TextYAlignment.Center
+loadingPercentInside.Parent = loadingBar
+loadingPercentInside.Visible = false
 
 -- Duping Complete Popup (initially invisible)
 local dupingCompleteLabel = Instance.new("TextLabel")
@@ -242,7 +243,7 @@ dupeButton.MouseLeave:Connect(function()
     dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
 end)
 
--- Visual Dupe Logic: clone held pet, put in Backpack, equip it, floating effect, no anchored parts to allow movement
+-- Visual Dupe Logic: clone held pet, put in Backpack, equip it, floating effect, no anchored parts so character can move
 local function createVisualPetCopy()
     local character = LocalPlayer.Character
     if not character then return false end
@@ -254,7 +255,16 @@ local function createVisualPetCopy()
 
     -- Clone the pet tool for visual dupe
     local visualClone = petTool:Clone()
-    visualClone.Name = petTool.Name .. "_VisualDupe_" .. tostring(tick()):gsub("%.", "")
+    
+    -- Remove any duplicate text from name
+    visualClone.Name = petTool.Name
+
+    -- Remove any TextLabels named "Visual Duplicate" or similar inside the tool (if any)
+    for _, child in pairs(visualClone:GetDescendants()) do
+        if child:IsA("TextLabel") and string.find(string.lower(child.Text), "dupe") then
+            child:Destroy()
+        end
+    end
 
     -- Put clone into Backpack (hotbar)
     visualClone.Parent = LocalPlayer:WaitForChild("Backpack")
@@ -285,25 +295,18 @@ local function createVisualPetCopy()
             handle.CFrame = startCFrame * CFrame.new(offset)
         end)
 
-        -- Cleanup after 30 seconds
-        delay(30, function()
-            if visualClone then
-                visualClone:Destroy()
-            end
-            if connection then
-                connection:Disconnect()
-            end
-        end)
+        -- No auto cleanup: duplicate pets stay indefinitely
     end
 
     return true
 end
 
--- Loading bar animation function with percentage text update
+-- Loading bar animation function with percentage text update inside bar
 local function startLoadingBar(duration, callback)
     loadingBarContainer.Visible = true
-    loadingPercentLabel.Visible = true
+    loadingPercentInside.Visible = true
     loadingBar.Size = UDim2.new(0, 0, 1, 0)
+    loadingPercentInside.Text = "0%"
 
     local startTime = tick()
 
@@ -313,7 +316,7 @@ local function startLoadingBar(duration, callback)
         local progress = math.clamp(elapsed / duration, 0, 1)
         loadingBar.Size = UDim2.new(progress, 0, 1, 0)
 
-        loadingPercentLabel.Text = tostring(math.floor(progress * 100)) .. "%"
+        loadingPercentInside.Text = tostring(math.floor(progress * 100)) .. "%"
 
         -- Pulsing glow effect
         local pulse = 0.5 + 0.5 * math.sin(elapsed * 8)
@@ -322,7 +325,7 @@ local function startLoadingBar(duration, callback)
         if progress >= 1 then
             conn:Disconnect()
             loadingBarContainer.Visible = false
-            loadingPercentLabel.Visible = false
+            loadingPercentInside.Visible = false
             callback()
         end
     end)
