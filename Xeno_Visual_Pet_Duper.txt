@@ -18,6 +18,18 @@ screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = PlayerGui
 
+-- START: Added toggle hotkey functionality
+screenGui.Enabled = false  -- Start hidden
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if not gameProcessedEvent then
+        if input.KeyCode == Enum.KeyCode.X then
+            screenGui.Enabled = not screenGui.Enabled
+        end
+    end
+end)
+-- END: toggle hotkey
+
 -- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 450, 0, 340)
