@@ -1,5 +1,6 @@
--- UI Setup
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -17,20 +18,56 @@ screenGui.Parent = PlayerGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+mainFrame.Size = UDim2.new(0, 450, 0, 330) -- Increased height to fit error message
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -165)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-mainFrame.BackgroundTransparency = 0.2 -- 80% transparency
+mainFrame.BackgroundTransparency = 0.2
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
-mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
--- Rounded corners
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = mainFrame
+
+-- Draggable logic
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
 -- Title Bar
 local titleBar = Instance.new("Frame")
@@ -66,8 +103,15 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(1, 0)
 closeCorner.Parent = closeButton
 
+closeButton.MouseEnter:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+end)
+closeButton.MouseLeave:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end)
+
 closeButton.MouseButton1Click:Connect(function()
-	screenGui:Destroy()
+    screenGui:Destroy()
 end)
 
 -- Warning Text
@@ -83,6 +127,45 @@ warningLabel.TextWrapped = true
 warningLabel.TextXAlignment = Enum.TextXAlignment.Center
 warningLabel.Parent = mainFrame
 
+-- Error Message (initially invisible)
+local errorLabel = Instance.new("TextLabel")
+errorLabel.Text = ""
+errorLabel.Font = Enum.Font.SourceSansBold
+errorLabel.TextSize = 16
+errorLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+errorLabel.BackgroundTransparency = 1
+errorLabel.Size = UDim2.new(1, -20, 0, 30)
+errorLabel.Position = UDim2.new(0, 10, 0, 95)
+errorLabel.TextWrapped = true
+errorLabel.TextXAlignment = Enum.TextXAlignment.Center
+errorLabel.Visible = false
+errorLabel.Parent = mainFrame
+
+-- Loading Bar Container (initially invisible)
+local loadingBarContainer = Instance.new("Frame")
+loadingBarContainer.Size = UDim2.new(0.8, 0, 0, 30)
+loadingBarContainer.Position = UDim2.new(0.1, 0, 0, 130)
+loadingBarContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+loadingBarContainer.BackgroundTransparency = 0.4
+loadingBarContainer.BorderSizePixel = 0
+loadingBarContainer.Visible = false
+loadingBarContainer.Parent = mainFrame
+
+local loadingCorner = Instance.new("UICorner")
+loadingCorner.CornerRadius = UDim.new(0, 8)
+loadingCorner.Parent = loadingBarContainer
+
+local loadingBar = Instance.new("Frame")
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.Position = UDim2.new(0, 0, 0, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+loadingBar.BorderSizePixel = 0
+loadingBar.Parent = loadingBarContainer
+
+local loadingBarCorner = Instance.new("UICorner")
+loadingBarCorner.CornerRadius = UDim.new(0, 8)
+loadingBarCorner.Parent = loadingBar
+
 -- Start Duping Button
 local dupeButton = Instance.new("TextButton")
 dupeButton.Text = "START DUPING"
@@ -91,12 +174,19 @@ dupeButton.TextSize = 22
 dupeButton.TextColor3 = Color3.new(1, 1, 1)
 dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
 dupeButton.Size = UDim2.new(0.8, 0, 0, 45)
-dupeButton.Position = UDim2.new(0.1, 0, 0, 180) -- Lowered slightly
+dupeButton.Position = UDim2.new(0.1, 0, 0, 180)
 dupeButton.Parent = mainFrame
 
 local dupeCorner = Instance.new("UICorner")
 dupeCorner.CornerRadius = UDim.new(0, 8)
 dupeCorner.Parent = dupeButton
+
+dupeButton.MouseEnter:Connect(function()
+    dupeButton.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+end)
+dupeButton.MouseLeave:Connect(function()
+    dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+end)
 
 -- Footer Text
 local footerTop = Instance.new("TextLabel")
@@ -118,3 +208,112 @@ footerBottom.BackgroundTransparency = 1
 footerBottom.Size = UDim2.new(1, 0, 0, 20)
 footerBottom.Position = UDim2.new(0, 0, 1, -20)
 footerBottom.Parent = mainFrame
+
+-- Visual Dupe Logic: clone held pet, put in Backpack, equip it, add floating effect, cleanup after 30 sec
+local function createVisualPetCopy()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local petTool = character:FindFirstChildOfClass("Tool")
+    if not petTool then
+        return false -- Indicate failure
+    end
+
+    -- Clone the pet tool for visual dupe
+    local visualClone = petTool:Clone()
+    visualClone.Name = petTool.Name .. "_VisualDupe"
+
+    -- Put clone into Backpack (hotbar)
+    visualClone.Parent = LocalPlayer:WaitForChild("Backpack")
+
+    -- Equip the cloned pet automatically (small delay to register)
+    task.delay(0.1, function()
+        if LocalPlayer.Character then
+            LocalPlayer.Character.Humanoid:EquipTool(visualClone)
+        end
+    end)
+
+    -- Floating effect on the handle if available
+    if visualClone:IsA("Tool") and visualClone:FindFirstChild("Handle") then
+        local handle = visualClone.Handle
+        if not handle.Anchored then
+            handle.Anchored = true
+            handle.CanCollide = false
+
+            local startPos = handle.Position
+            local amplitude = 0.3
+            local frequency = 2
+
+            local connection
+            connection = RunService.Heartbeat:Connect(function(time)
+                if not handle or not handle.Parent then
+                    connection:Disconnect()
+                    return
+                end
+                handle.Position = startPos + Vector3.new(0, amplitude * math.sin(time * frequency), 0)
+            end)
+
+            -- Cleanup after 30 seconds
+            delay(30, function()
+                if visualClone then
+                    visualClone:Destroy()
+                end
+                if connection then
+                    connection:Disconnect()
+                end
+            end)
+        end
+    end
+
+    return true -- Success
+end
+
+-- Loading bar animation function
+local function startLoadingBar(duration, callback)
+    loadingBarContainer.Visible = true
+    loadingBar.Size = UDim2.new(0, 0, 1, 0)
+
+    local startTime = tick()
+
+    local conn
+    conn = RunService.Heartbeat:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = math.clamp(elapsed / duration, 0, 1)
+        loadingBar.Size = UDim2.new(progress, 0, 1, 0)
+
+        -- Pulsing glow effect
+        local pulse = 0.5 + 0.5 * math.sin(elapsed * 8)
+        loadingBar.BackgroundColor3 = Color3.fromHSV(0.75, 1, pulse * 0.8 + 0.2)
+
+        if progress >= 1 then
+            conn:Disconnect()
+            loadingBarContainer.Visible = false
+            callback()
+        end
+    end)
+end
+
+-- Show error message function
+local function showError(message)
+    errorLabel.Text = message
+    errorLabel.Visible = true
+    task.delay(3, function()
+        errorLabel.Visible = false
+    end)
+end
+
+-- Connect the start dupe button
+dupeButton.MouseButton1Click:Connect(function()
+    footerTop.Text = "DUPING SYSTEM - READY" -- Reset footer text
+    local success = createVisualPetCopy()
+    if not success then
+        showError("Error: You must be holding out a pet tool to dupe!")
+        return
+    end
+
+    footerTop.Text = "DUPING SYSTEM - LOADING..."
+    startLoadingBar(10, function()
+        footerTop.Text = "DUPING SYSTEM - VISUAL DUPE ACTIVE"
+        -- Visual dupe already created before loading to avoid delay in UI
+    end)
+end)
