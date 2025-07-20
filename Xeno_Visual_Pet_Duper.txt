@@ -19,7 +19,7 @@ screenGui.Parent = PlayerGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 330) -- height increased for messages
+mainFrame.Size = UDim2.new(0, 450, 0, 330)
 mainFrame.Position = UDim2.new(0.5, -225, 0.5, -165)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.2
@@ -198,6 +198,28 @@ local dupingCompleteCorner = Instance.new("UICorner")
 dupingCompleteCorner.CornerRadius = UDim.new(0, 10)
 dupingCompleteCorner.Parent = dupingCompleteLabel
 
+-- Footer Text - Top
+local footerTop = Instance.new("TextLabel")
+footerTop.Text = "DUPING SYSTEM - READY"
+footerTop.Font = Enum.Font.SourceSansBold
+footerTop.TextSize = 16
+footerTop.TextColor3 = Color3.fromRGB(200, 200, 200)
+footerTop.BackgroundTransparency = 1
+footerTop.Size = UDim2.new(1, 0, 0, 20)
+footerTop.Position = UDim2.new(0, 0, 1, -40)
+footerTop.Parent = mainFrame
+
+-- Footer Text - Bottom
+local footerBottom = Instance.new("TextLabel")
+footerBottom.Text = "PREMIUM EDITION | Made by XenoScripts"
+footerBottom.Font = Enum.Font.SourceSansItalic
+footerBottom.TextSize = 14
+footerBottom.TextColor3 = Color3.fromRGB(160, 160, 160)
+footerBottom.BackgroundTransparency = 1
+footerBottom.Size = UDim2.new(1, 0, 0, 20)
+footerBottom.Position = UDim2.new(0, 0, 1, -20)
+footerBottom.Parent = mainFrame
+
 -- Start Duping Button
 local dupeButton = Instance.new("TextButton")
 dupeButton.Text = "START DUPING"
@@ -259,7 +281,6 @@ local function createVisualPetCopy()
                 connection:Disconnect()
                 return
             end
-            -- Float up/down by small offset from original CFrame (use CFrame to avoid anchoring)
             local offset = Vector3.new(0, amplitude * math.sin(time * frequency), 0)
             handle.CFrame = startCFrame * CFrame.new(offset)
         end)
@@ -292,7 +313,6 @@ local function startLoadingBar(duration, callback)
         local progress = math.clamp(elapsed / duration, 0, 1)
         loadingBar.Size = UDim2.new(progress, 0, 1, 0)
 
-        -- Update percentage text
         loadingPercentLabel.Text = tostring(math.floor(progress * 100)) .. "%"
 
         -- Pulsing glow effect
@@ -308,7 +328,7 @@ local function startLoadingBar(duration, callback)
     end)
 end
 
--- Show error message function
+-- Show error message function (3 seconds visible)
 local function showError(message)
     errorLabel.Text = message
     errorLabel.Visible = true
@@ -322,10 +342,8 @@ local function showDupingComplete()
     dupingCompleteLabel.Visible = true
     dupingCompleteLabel.TextTransparency = 1
 
-    -- Fade in
     TweenService:Create(dupingCompleteLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
 
-    -- Fade out after 3 seconds
     delay(3, function()
         TweenService:Create(dupingCompleteLabel, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
         task.delay(0.5, function()
@@ -336,20 +354,18 @@ end
 
 -- Connect the start dupe button
 dupeButton.MouseButton1Click:Connect(function()
-    footerTop.Text = "DUPING SYSTEM - READY" -- Reset footer text
+    footerTop.Text = "DUPING SYSTEM - READY"
 
-    -- Check if player is holding pet BEFORE loading
     local character = LocalPlayer.Character
     local petTool = character and character:FindFirstChildOfClass("Tool")
     if not petTool then
-        showError("You must be holding out a pet to dupe!")
+        showError("You must be holding out a pet to duplicate!")
         return
     end
 
     footerTop.Text = "DUPING SYSTEM - LOADING..."
     startLoadingBar(10, function()
         footerTop.Text = "DUPING SYSTEM - VISUAL DUPE ACTIVE"
-        -- Create the visual pet AFTER loading completes
         local success = createVisualPetCopy()
         if success then
             showDupingComplete()
