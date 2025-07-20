@@ -1,126 +1,117 @@
-repeat wait() until game:IsLoaded()
-
+-- UI Setup
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Remove existing UI if present
-if PlayerGui:FindFirstChild("XenoDupeUI") then
-    PlayerGui:FindFirstChild("XenoDupeUI"):Destroy()
+-- Remove old UI if it exists
+if PlayerGui:FindFirstChild("GrowAGardenDupeUI") then
+    PlayerGui:FindFirstChild("GrowAGardenDupeUI"):Destroy()
 end
 
--- Create UI
-local screenGui = Instance.new("ScreenGui", PlayerGui)
-screenGui.Name = "XenoDupeUI"
+-- Main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GrowAGardenDupeUI"
 screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = PlayerGui
 
-local mainFrame = Instance.new("Frame", screenGui)
-mainFrame.Size = UDim2.new(0, 500, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 450, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+
+-- Rounded corners
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
 
 -- Title Bar
-local titleBar = Instance.new("Frame", mainFrame)
-titleBar.Size = UDim2.new(1, 0, 0, 40)
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundTransparency = 1
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
 
-local titleLabel = Instance.new("TextLabel", titleBar)
-titleLabel.Size = UDim2.new(1, -60, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.Text = "♻️ Grow A Garden Dupe (Not Visual) ⚠️"
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "♻️  Grow A Garden Dupe (Not Visual)  ⚠️"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 20
 titleLabel.TextColor3 = Color3.new(1, 1, 1)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 20
+titleLabel.Size = UDim2.new(1, -40, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
 
 -- Close Button
-local closeBtn = Instance.new("TextButton", titleBar)
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -40, 0, 5)
-closeBtn.Text = "✖"
-closeBtn.Font = Enum.Font.Gotham
-closeBtn.TextSize = 20
-closeBtn.TextColor3 = Color3.new(1, 1, 1)
-closeBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-closeBtn.BorderSizePixel = 0
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+local closeButton = Instance.new("TextButton")
+closeButton.Text = "❌"
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.TextSize = 18
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 3)
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
 end)
 
--- Warning Label
-local warningLabel = Instance.new("TextLabel", mainFrame)
-warningLabel.Size = UDim2.new(1, -20, 0, 60)
-warningLabel.Position = UDim2.new(0, 10, 0, 50)
+-- Warning Text
+local warningLabel = Instance.new("TextLabel")
 warningLabel.Text = "⚠️ WARNING: This is NOT a visual dupe! Use at your own risk!"
+warningLabel.Font = Enum.Font.SourceSansBold
+warningLabel.TextSize = 18
 warningLabel.TextColor3 = Color3.new(1, 1, 0)
-warningLabel.Font = Enum.Font.GothamBold
-warningLabel.TextSize = 16
 warningLabel.BackgroundTransparency = 1
+warningLabel.Size = UDim2.new(1, -20, 0, 40)
+warningLabel.Position = UDim2.new(0, 10, 0, 50)
 warningLabel.TextWrapped = true
+warningLabel.TextXAlignment = Enum.TextXAlignment.Center
+warningLabel.Parent = mainFrame
 
 -- Start Duping Button
-local dupeButton = Instance.new("TextButton", mainFrame)
-dupeButton.Size = UDim2.new(0.6, 0, 0, 40)
-dupeButton.Position = UDim2.new(0.5, -150, 0.5, -20)
+local dupeButton = Instance.new("TextButton")
 dupeButton.Text = "START DUPING"
-dupeButton.Font = Enum.Font.GothamBold
-dupeButton.TextSize = 18
-dupeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-dupeButton.BackgroundColor3 = Color3.fromRGB(130, 0, 255)
-dupeButton.BorderSizePixel = 0
+dupeButton.Font = Enum.Font.SourceSansBold
+dupeButton.TextSize = 22
+dupeButton.TextColor3 = Color3.new(1, 1, 1)
+dupeButton.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+dupeButton.Size = UDim2.new(0.8, 0, 0, 45)
+dupeButton.Position = UDim2.new(0.1, 0, 0, 120)
+dupeButton.Parent = mainFrame
 
--- Loading Bar
-local loadingBarBg = Instance.new("Frame", mainFrame)
-loadingBarBg.Size = UDim2.new(0.8, 0, 0, 10)
-loadingBarBg.Position = UDim2.new(0.1, 0, 0.75, 0)
-loadingBarBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-loadingBarBg.BorderSizePixel = 0
+local dupeCorner = Instance.new("UICorner")
+dupeCorner.CornerRadius = UDim.new(0, 8)
+dupeCorner.Parent = dupeButton
 
-local loadingBar = Instance.new("Frame", loadingBarBg)
-loadingBar.Size = UDim2.new(0, 0, 1, 0)
-loadingBar.BackgroundColor3 = Color3.fromRGB(90, 0, 200)
-loadingBar.BorderSizePixel = 0
+-- Footer Text
+local footerTop = Instance.new("TextLabel")
+footerTop.Text = "DUPING SYSTEM - READY"
+footerTop.Font = Enum.Font.SourceSansBold
+footerTop.TextSize = 16
+footerTop.TextColor3 = Color3.fromRGB(200, 200, 200)
+footerTop.BackgroundTransparency = 1
+footerTop.Size = UDim2.new(1, 0, 0, 20)
+footerTop.Position = UDim2.new(0, 0, 1, -40)
+footerTop.Parent = mainFrame
 
--- Footer
-local footerLabel = Instance.new("TextLabel", mainFrame)
-footerLabel.Size = UDim2.new(1, -20, 0, 40)
-footerLabel.Position = UDim2.new(0, 10, 1, -40)
-footerLabel.Text = "DUPING SYSTEM - READY\nPREMIUM EDITION | Made by XenoScripts"
-footerLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-footerLabel.Font = Enum.Font.Gotham
-footerLabel.TextSize = 14
-footerLabel.BackgroundTransparency = 1
-footerLabel.TextWrapped = true
-
--- Dupe Logic Handler
-local function performDupe()
-    print("🔁 Duping started...")
-
-    -- Insert your actual dupe logic here
-    wait(1)
-    print("✅ Duping complete!")
-end
-
--- Start Duping Button Behavior
-dupeButton.MouseButton1Click:Connect(function()
-    dupeButton.Text = "LOADING..."
-    dupeButton.Active = false
-
-    -- Animate loading bar
-    TweenService:Create(loadingBar, TweenInfo.new(3), { Size = UDim2.new(1, 0, 1, 0) }):Play()
-
-    wait(3) -- loading time
-
-    dupeButton.Text = "START DUPING"
-    dupeButton.Active = true
-    loadingBar.Size = UDim2.new(0, 0, 1, 0)
-
-    performDupe()
-end)
+local footerBottom = Instance.new("TextLabel")
+footerBottom.Text = "PREMIUM EDITION | Made by XenoScripts"
+footerBottom.Font = Enum.Font.SourceSansItalic
+footerBottom.TextSize = 14
+footerBottom.TextColor3 = Color3.fromRGB(160, 160, 160)
+footerBottom.BackgroundTransparency = 1
+footerBottom.Size = UDim2.new(1, 0, 0, 20)
+footerBottom.Position = UDim2.new(0, 0, 1, -20)
+footerBottom.Parent = mainFrame
