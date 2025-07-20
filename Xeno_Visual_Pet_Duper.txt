@@ -19,7 +19,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = PlayerGui
 
 -- START: Added toggle hotkey functionality
-screenGui.Enabled = false  -- Start hidden
+screenGui.Enabled = true  -- Start visible
 
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
     if not gameProcessedEvent then
