@@ -20,8 +20,8 @@ screenGui.Parent = PlayerGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 330)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -165)
+mainFrame.Size = UDim2.new(0, 450, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -225, 0.5, -170)
 mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 mainFrame.BackgroundTransparency = 0.2
 mainFrame.BorderSizePixel = 0
@@ -79,6 +79,10 @@ titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
+local titleBarCorner = Instance.new("UICorner")
+titleBarCorner.CornerRadius = UDim.new(0, 12)
+titleBarCorner.Parent = titleBar
+
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Text = "♻️  Grow A Garden Dupe (Not Visual)  ⚠️"
 titleLabel.Font = Enum.Font.SourceSansBold
@@ -127,6 +131,20 @@ warningLabel.Position = UDim2.new(0, 10, 0, 50)
 warningLabel.TextWrapped = true
 warningLabel.TextXAlignment = Enum.TextXAlignment.Center
 warningLabel.Parent = mainFrame
+
+-- Info note (appears on start duping click)
+local infoNote = Instance.new("TextLabel")
+infoNote.Text = "Do not leave the game or the duplication process will fail"
+infoNote.Font = Enum.Font.SourceSansItalic
+infoNote.TextSize = 16
+infoNote.TextColor3 = Color3.fromRGB(255, 165, 0)
+infoNote.BackgroundTransparency = 1
+infoNote.Size = UDim2.new(1, -20, 0, 30)
+infoNote.Position = UDim2.new(0, 10, 0, 95)
+infoNote.TextWrapped = true
+infoNote.TextXAlignment = Enum.TextXAlignment.Center
+infoNote.Visible = false
+infoNote.Parent = mainFrame
 
 -- Error message label (hidden by default)
 local errorLabel = Instance.new("TextLabel")
@@ -254,7 +272,7 @@ local function createVisualPetCopy()
     end
 
     local visualClone = petTool:Clone()
-    -- DO NOT rename; keep exact same name as original pet
+    -- Keep exact same name as original pet
     visualClone.Name = petTool.Name
 
     -- Remove any TextLabels inside clone that mention "dupe"
@@ -272,11 +290,11 @@ local function createVisualPetCopy()
         end
     end)
 
-    -- Just disable collisions but do NOT animate handle CFrame, so player can move normally
+    -- Ensure handle is NOT anchored and CanCollide is false
     if visualClone:IsA("Tool") and visualClone:FindFirstChild("Handle") then
         local handle = visualClone.Handle
         handle.CanCollide = false
-        -- Removed CFrame animation so character can move freely while holding pet
+        handle.Anchored = false
     end
 
     return true
@@ -288,6 +306,7 @@ local function startLoadingBar(duration, callback)
     loadingPercentInside.Visible = true
     loadingBar.Size = UDim2.new(0, 0, 1, 0)
     loadingPercentInside.Text = "0%"
+    infoNote.Visible = true  -- Show info note on start
 
     local startTime = tick()
 
@@ -297,7 +316,6 @@ local function startLoadingBar(duration, callback)
         local progress = math.clamp(elapsed / duration, 0, 1)
         loadingBar.Size = UDim2.new(progress, 0, 1, 0)
 
-        -- Update percentage text centered inside loading bar
         loadingPercentInside.Text = tostring(math.floor(progress * 100)) .. "%"
 
         -- Pulsing glow effect
@@ -308,6 +326,8 @@ local function startLoadingBar(duration, callback)
             conn:Disconnect()
             loadingBarContainer.Visible = false
             loadingPercentInside.Visible = false
+
+            infoNote.Visible = false  -- Hide info note when done
             callback()
         end
     end)
